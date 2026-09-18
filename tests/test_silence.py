@@ -1,0 +1,75 @@
+#!/usr/bin/env python3
+import sys
+import unittest
+from pathlib import Path
+
+# Add scripts dir to sys.path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
+
+from silence_detector import (
+    detect_adaptive_pauses,
+    protect_words_from_cuts,
+    resolve_silence_db,
+    split_retained_pause,
+)
+
+
+class SilenceDetectorTests(unittest.TestCase):
+    def test_resolve_silence_db_explicit(self):
+        self.assertEqual(resolve_silence_db("-25", -20.0, -45.0, -15.0), -25.0)
+
+    def test_resolve_silence_db_auto(self):
+        # snr = -15 - (-45) = 30 dB (> 20dB) -> noise_floor + 8 = -37.0
+        db = resolve_silence_db("auto", -20.0, -45.0, -15.0)
+        self.assertEqual(db, -37.0)
+
+        # snr < 10 dB -> speech - 6
+        db_low_snr = resolve_silence_db("auto", -20.0, -20.0, -15.0)
+        self.assertEqual(db_low_snr, -21.0)
+
+    def test_split_retained_pause(self):
+        kb, ka = split_retained_pause(180.0)
+        # total_ms = 180ms
+        # keep_after = min(80, 180 * 0.33) = 59.4ms -> 0.0594s
+        # keep_before = 180 - 59.4 = 120.6ms -> 0.1206s
+        self.assertAlmostEqual(kb + ka, 0.180)
+        self.assertGreater(kb, ka)  # Brisk entry: keep less after cut (before next word)
+
+    def test_protect_words_from_cuts(self):
+        words = [
+            {"word": "测试", "start": 1.0, "end": 2.0},  # 1000ms - 2000ms
+        ]
+        # Cut is 0.5s to 2.5s (500ms to 2500ms), which completely encompasses the word
+        cuts = [
+            {"start_ms": 500.0, "end_ms": 2500.0, "source": "silence"},
+        ]
+        # pad_ms = 60ms: protected word interval is 940ms to 2060ms
+        # Cut should be split into [500, 940] (440ms) and [2060, 2500] (440ms)
+        protected = protect_words_from_cuts(cuts, words, pad_ms=60.0, min_cut_ms=100.0)
+        self.assertEqual(len(protected), 2)
+        self.assertAlmostEqual(protected[0]["start_ms"], 500.0)
+        self.assertAlmostEqual(protected[0]["end_ms"], 940.0)
+        self.assertAlmostEqual(protected[1]["start_ms"], 2060.0)
+        self.assertAlmostEqual(protected[1]["end_ms"], 2500.0)
+
+    def test_detect_adaptive_pauses(self):
+        words = [
+            {"word": "大家好。", "start": 0.0, "end": 1.0},
+            {"word": "下一个话题", "start": 1.4, "end": 2.0},  # 400ms pause after sentence period
+        ]
+        silence_regions = [
+            (1.0, 1.4),  # 400ms pause. Since previous word ends with "。", sentence threshold is 350ms, so it qualifies
+        ]
+        pauses = detect_adaptive_pauses(
+            silence_regions,
+            words,
+            threshold_ms=450.0,
+            sentence_threshold_ms=350.0,
+            min_pause_ms=180.0,
+        )
+        self.assertEqual(len(pauses), 1)
+        self.assertTrue(pauses[0]["is_sentence_boundary"])
+
+
+if __name__ == "__main__":
+    unittest.main()
