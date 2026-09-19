@@ -207,6 +207,7 @@ def call_chat_completion(
     model: str,
     prompt: str,
     timeout: int = 120,
+    enable_thinking: bool = False,
 ) -> dict[str, Any]:
     url = f"{api_base.rstrip('/')}/chat/completions"
     payload = {
@@ -220,6 +221,7 @@ def call_chat_completion(
         ],
         "temperature": 0,
         "stream": True,
+        "enable_thinking": enable_thinking,
         "response_format": {"type": "json_object"},
     }
     data = json.dumps(payload).encode("utf-8")
@@ -364,6 +366,7 @@ def plan_video_cuts(
     model: str = "qwen3.8-omni-flash",
     api_base: str = "https://dashscope.aliyuncs.com/compatible-mode/v1",
     concurrency: int = 5,
+    enable_thinking: bool = False,
 ) -> list[dict[str, Any]]:
     """Generate global paper-edit candidates using sliding windows and concurrency."""
     atoms = transcript_atoms(segments)
@@ -375,7 +378,9 @@ def plan_video_cuts(
     all_candidates = []
     if len(chunks) == 1:
         prompt = build_prompt(chunks[0])
-        plan = call_chat_completion(api_base, api_key, model, prompt)
+        plan = call_chat_completion(
+            api_base, api_key, model, prompt, enable_thinking=enable_thinking
+        )
         all_candidates = candidates_from_plan(plan, chunks[0], model)
     else:
         log(f"Scanning {len(chunks)} windows with concurrency={concurrency}...")
@@ -383,7 +388,9 @@ def plan_video_cuts(
         def _worker(idx_chunk):
             idx, chunk = idx_chunk
             p = build_prompt(chunk)
-            resp = call_chat_completion(api_base, api_key, model, p)
+            resp = call_chat_completion(
+                api_base, api_key, model, p, enable_thinking=enable_thinking
+            )
             return candidates_from_plan(resp, chunk, model)
 
         with ThreadPoolExecutor(max_workers=concurrency) as executor:

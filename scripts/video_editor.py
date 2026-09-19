@@ -75,6 +75,7 @@ def run_pipeline(
     dry_run: bool = False,
     fast_copy: bool = False,
     model: str | None = None,
+    thinking: bool | None = None,
     pause_threshold_ms: float | None = None,
     work_dir: Path | None = None,
 ) -> dict[str, Any]:
@@ -85,6 +86,7 @@ def run_pipeline(
 
     cfg = get_config()
     model = model or cfg.get("model", "qwen3.8-omni-flash")
+    enable_thinking = thinking if thinking is not None else cfg.get("enable_thinking", False)
     api_base = cfg.get("api_base", "https://dashscope.aliyuncs.com/compatible-mode/v1")
     concurrency = int(cfg.get("concurrency", 5))
     pause_thresh = float(pause_threshold_ms or cfg.get("pause_threshold_ms", 450.0))
@@ -150,6 +152,7 @@ def run_pipeline(
         model=model,
         api_base=api_base,
         concurrency=concurrency,
+        enable_thinking=enable_thinking,
     )
 
     # Step 6: Refine semantic cuts to waveform minima
@@ -239,12 +242,13 @@ def main():
     cut_parser.add_argument("--dry-run", action="store_true", help="Analyze and generate plan/report without exporting video")
     cut_parser.add_argument("--fast-copy", action="store_true", help="Fast stream-copy cut without re-encoding (snaps to keyframes)")
     cut_parser.add_argument("--model", type=str, help="AI reasoning model (default: qwen3.8-omni-flash)")
-    cut_parser.add_argument("--pause-threshold", type=float, help="Pause threshold in ms (default: 450)")
+    cut_parser.add_argument("--thinking", action="store_true", help="Enable deep thinking reasoning tokens (higher cost/latency, default: disabled)")
     cut_parser.add_argument("--work-dir", type=Path, help="Custom directory to store intermediate files")
 
     # review command (alias to dry-run)
     review_parser = subparsers.add_parser("review", help="Review cuts and generate markdown report without modifying video")
     review_parser.add_argument("video", type=Path, help="Path to input video file")
+    review_parser.add_argument("--thinking", action="store_true", help="Enable deep thinking reasoning tokens")
     review_parser.add_argument("--model", type=str, help="AI reasoning model")
     review_parser.add_argument("--work-dir", type=Path, help="Custom directory to store intermediate files")
 
@@ -255,6 +259,7 @@ def main():
             args.video,
             dry_run=True,
             model=args.model,
+            thinking=args.thinking,
             work_dir=args.work_dir,
         )
         print(json.dumps(res, ensure_ascii=False, indent=2))
@@ -265,6 +270,7 @@ def main():
             dry_run=args.dry_run,
             fast_copy=args.fast_copy,
             model=args.model,
+            thinking=args.thinking,
             pause_threshold_ms=args.pause_threshold,
             work_dir=args.work_dir,
         )
