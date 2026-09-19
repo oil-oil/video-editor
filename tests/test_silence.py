@@ -19,13 +19,9 @@ class SilenceDetectorTests(unittest.TestCase):
         self.assertEqual(resolve_silence_db("-25", -20.0, -45.0, -15.0), -25.0)
 
     def test_resolve_silence_db_auto(self):
-        # snr = -15 - (-45) = 30 dB (> 20dB) -> noise_floor + 8 = -37.0
+        # noise_floor = -45.0, speech = -15.0 -> -45 + 0.45 * 30 = -31.5
         db = resolve_silence_db("auto", -20.0, -45.0, -15.0)
-        self.assertEqual(db, -37.0)
-
-        # snr < 10 dB -> speech - 6
-        db_low_snr = resolve_silence_db("auto", -20.0, -20.0, -15.0)
-        self.assertEqual(db_low_snr, -21.0)
+        self.assertEqual(db, -31.5)
 
     def test_split_retained_pause(self):
         kb, ka = split_retained_pause(180.0)

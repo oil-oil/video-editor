@@ -184,6 +184,20 @@ def run_pipeline(
     )
     log(f"Saved audit report: {report_md_path}")
 
+    plan_json_path = work_dir / f"{video_path.stem}_edit_plan.json"
+    write_json(
+        plan_json_path,
+        {
+            "input_video": str(video_path),
+            "original_duration_s": original_duration_s,
+            "new_duration_s": new_duration_s,
+            "pause_cuts": pause_cuts,
+            "semantic_cuts": semantic_cuts,
+            "merged_cut_intervals": merged_cut_intervals,
+            "kept_intervals": kept_intervals,
+        },
+    )
+
     # Step 7: Video Assembly (unless dry-run)
     if not dry_run:
         if fast_copy:
@@ -205,7 +219,10 @@ def run_pipeline(
         "saved_ratio": (saved_s / original_duration_s) if original_duration_s else 0.0,
         "pause_cuts_count": len(pause_cuts),
         "semantic_cuts_count": len(semantic_cuts),
+        "merged_cut_intervals": merged_cut_intervals,
+        "kept_intervals": kept_intervals,
         "report_md": str(report_md_path),
+        "plan_json": str(plan_json_path),
         "dry_run": dry_run,
         "elapsed_s": elapsed,
     }

@@ -29,14 +29,12 @@ def resolve_silence_db(
             return float(requested)
         except ValueError:
             pass
-    snr = speech_level - noise_floor
-    if snr < 10.0:
-        threshold = speech_level - 6.0
-    elif snr < 20.0:
-        threshold = noise_floor + snr * 0.40
-    else:
-        threshold = noise_floor + 8.0
-    return round(max(-50.0, min(-18.0, threshold)), 1)
+    if speech_level > noise_floor:
+        threshold = noise_floor + 0.45 * (speech_level - noise_floor)
+        return round(max(-45.0, min(-18.0, threshold)), 1)
+    if mean_db is not None:
+        return round(max(-45.0, min(-18.0, mean_db - 10.0)), 1)
+    return -28.0
 
 
 def detect_silence_regions(
