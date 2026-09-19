@@ -128,22 +128,28 @@ def chunk_transcript_atoms(
 
 
 def build_prompt(atoms: list[dict[str, Any]]) -> str:
-    rows = "\n".join(
-        f"[{item['id']} {format_timestamp(item['start'])}-{format_timestamp(item['end'])}] {item['text']}"
-        for item in atoms
-    )
+    rows = []
+    for i, item in enumerate(atoms):
+        if i > 0:
+            gap = float(item["start"]) - float(atoms[i - 1]["end"])
+            if gap >= 1.5:
+                rows.append(f"--- [PAUSE {gap:.1f}s] ---")
+        rows.append(
+            f"[{item['id']} {format_timestamp(item['start'])}-{format_timestamp(item['end'])}] {item['text']}"
+        )
+    transcript_rows = "\n".join(rows)
     return f"""You are making a PAPER EDIT for a spoken video tutorial.
-The full transcript is below as timestamped atomic utterances. Find every
-plausible contiguous range that is a recording mistake, while preserving the
+The full transcript is below as timestamped atomic utterances with explicit [PAUSE Xs] markers.
+Find every plausible contiguous range that is a recording mistake, while preserving the
 creator's intended explanation.
 
 This is candidate generation, not final deletion. Favor recall, but every
 candidate still needs concrete structural evidence.
-Rely on transcript structure and spoken cadence.
+Rely on transcript structure, spoken cadence, and explicit pauses.
 
 Include:
 - an abandoned or stumbled earlier take followed by a clean restart;
-- an extended preliminary or rambling attempt (10-60s) that trails off into a long pause (>3s) or incomplete sentence, followed by the speaker restarting or restructuring the explanation of that step/topic from scratch; propose the ENTIRE preliminary attempt through the pause before the clean restart as an abandoned_take, with replacement_ids set to the clean restart take;
+- an extended preliminary or rambling attempt (10-60s) with long pauses (notice [PAUSE Xs] markers) where the speaker hesitates, trials an incomplete explanation, and restarts/restructures the explanation from scratch; propose the preliminary attempt before the clean restart as an abandoned_take, with replacement_ids set to the clean restart take;
 - immediate repeated words, stuttered syllables, or delivery stumbles (e.g. speaker stumbles "这个平台他们" right before "他们就是提供..."; propose the stumble as delivery_cleanup);
 - local self-correction or slip-of-the-tongue where words are immediately superseded (e.g. speaker says "就是这个速转快。" then immediately corrects to "就这个转速快，然后..."; propose the slip as self_correction with replacement set to the corrected utterance);
 - false starts or aborted sentence lead-ins where the speaker starts a thought, abandons it, and restarts a different phrasing (e.g. "不过你最好是，" immediately followed by "不过这个门槛就比较高了"; propose the false start as delivery_cleanup or abandoned_take);
@@ -177,7 +183,7 @@ Return strict JSON only in this shape:
 }}
 
 FULL TRANSCRIPT:
-{rows}
+{transcript_rows}
 """
 
 
