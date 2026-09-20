@@ -20,16 +20,16 @@ node "$SKILL_DIR/scripts/credential-ui/src/profile.ts" setup default
 
 | 配置名 | 业务环境变量 | 系统凭据引用 | 说明 |
 | --- | --- | --- | --- |
-| default | `DASHSCOPE_API_KEY` | `video-editor/dashscope/default` | 阿里云百炼 DashScope API Key（用于 FunASR 转录与 Qwen 3.8 Omni Flash 语义口误消除） |
+| default | `DASHSCOPE_API_KEY` | `video-editor/dashscope/default` | 阿里云百炼 DashScope API Key（仅用于语音转录） |
 
 ## 运行业务
 
-通过以下入口运行本 Skill 的真实脚本，`--` 后保留原业务参数：
+推荐使用统一入口 `bash "$SKILL_DIR/scripts/run.sh" cut /path/to/video.mp4`，它选择虚拟环境并复用已有环境变量或 bl 配置，缺少时调用系统凭据注入。该 Key 只给 ASR 使用；语义判断由调用 Skill 的 Agent 在本地完成。底层等价命令如下，`--` 后必须保留 `cut` 子命令：
 
 ```bash
-node "$SKILL_DIR/scripts/credential-ui/src/profile.ts" run default -- "$SKILL_DIR/.venv/bin/python3" "$SKILL_DIR/scripts/video_editor.py" /path/to/video.mp4
+node "$SKILL_DIR/scripts/credential-ui/src/profile.ts" run default -- "$SKILL_DIR/.venv/bin/python3" "$SKILL_DIR/scripts/video_editor.py" cut /path/to/video.mp4
 ```
 
-环境变量优先；缺失时仅从系统库读取当前配置所需的 Key，并只注入可信业务子进程。参数、普通文件和状态输出都不含 Key。使用页面保存的凭据后，后续云端业务命令同样经 run 入口执行。
+上述底层注入入口中，环境变量优先；缺失时仅从系统库读取当前配置所需的 Key，并只注入可信业务子进程。参数、普通文件和状态输出都不含 Key。使用页面保存的凭据后，后续云端业务命令同样经统一入口执行。`review` 和 `render` 直接使用本地计划，无需 Key。
 
 系统后端分别为 macOS 钥匙串、Windows 凭据管理器、Linux Secret Service。CI、容器与远程服务器使用已有 Secret 注入，不把本机页面开放到网络。

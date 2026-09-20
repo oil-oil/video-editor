@@ -4,8 +4,11 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import math
+import os
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -21,7 +24,40 @@ def load_json(path: Path | str) -> Any:
 def write_json(path: Path | str, data: Any) -> None:
     p = Path(path)
     p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=p.parent, delete=False) as f:
+        tmp = Path(f.name)
+        try:
+            f.write(json.dumps(data, ensure_ascii=False, indent=2) + "\n")
+            f.close()
+            os.replace(tmp, p)
+        finally:
+            tmp.unlink(missing_ok=True)
+
+
+def source_signature(path: Path) -> dict[str, Any]:
+    digest = hashlib.sha256()
+    with path.open("rb") as f:
+        for block in iter(lambda: f.read(1024 * 1024), b""):
+            digest.update(block)
+    return {"path": str(path.resolve()), "sha256": digest.hexdigest()}
+
+
+def validate_intervals(intervals: list, duration_ms: float) -> list[tuple[float, float]]:
+    """Reject malformed plans instead of silently clamping or dropping content."""
+    if not math.isfinite(duration_ms) or duration_ms <= 0:
+        raise ValueError("视频时长无效")
+    result = []
+    previous_end = 0.0
+    for pair in intervals:
+        if not isinstance(pair, (list, tuple)) or len(pair) != 2:
+            raise ValueError("剪辑区间必须包含起止时间")
+        start, end = map(float, pair)
+        if not (math.isfinite(start) and math.isfinite(end)
+                and previous_end <= start < end <= duration_ms):
+            raise ValueError("剪辑区间越界、重叠、乱序或包含无效数值")
+        result.append((start, end))
+        previous_end = end
+    return result
 
 
 def format_timestamp(seconds: float) -> str:

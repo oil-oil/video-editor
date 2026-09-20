@@ -32,7 +32,7 @@ if [[ ! -d ".venv" ]]; then
     python3 -m venv .venv
 fi
 .venv/bin/pip install --quiet --upgrade pip
-.venv/bin/pip install --quiet silero-vad torch
+.venv/bin/pip install --quiet silero-vad torch dashscope
 
 "$SKILL_DIR/.venv/bin/python3" -c "import silero_vad; print('silero-vad verified.')"
 

@@ -48,23 +48,33 @@ class SilenceDetectorTests(unittest.TestCase):
         self.assertAlmostEqual(protected[1]["start_ms"], 2060.0)
         self.assertAlmostEqual(protected[1]["end_ms"], 2500.0)
 
-    def test_detect_adaptive_pauses(self):
+    def test_detect_adaptive_pauses_uses_one_300ms_threshold(self):
         words = [
-            {"word": "大家好。", "start": 0.0, "end": 1.0},
-            {"word": "下一个话题", "start": 1.4, "end": 2.0},  # 400ms pause after sentence period
+            {"word": "大家好", "start": 0.0, "end": 1.0},
+            {"word": "下一个话题", "start": 1.32, "end": 2.0},  # 320ms pause qualifies
         ]
         silence_regions = [
-            (1.0, 1.4),  # 400ms pause. Since previous word ends with "。", sentence threshold is 350ms, so it qualifies
+            (1.0, 1.32),
         ]
         pauses = detect_adaptive_pauses(
             silence_regions,
             words,
-            threshold_ms=450.0,
-            sentence_threshold_ms=350.0,
+            threshold_ms=300.0,
+            sentence_threshold_ms=300.0,
             min_pause_ms=180.0,
         )
         self.assertEqual(len(pauses), 1)
-        self.assertTrue(pauses[0]["is_sentence_boundary"])
+        self.assertFalse(pauses[0]["is_sentence_boundary"])
+
+        self.assertEqual(
+            detect_adaptive_pauses(
+                [(1.0, 1.29)], words,
+                threshold_ms=300.0,
+                sentence_threshold_ms=300.0,
+                min_pause_ms=180.0,
+            ),
+            [],
+        )
 
 
 if __name__ == "__main__":

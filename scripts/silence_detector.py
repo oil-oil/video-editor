@@ -40,7 +40,7 @@ def resolve_silence_db(
 def detect_silence_regions(
     audio_path: Path,
     noise_db: float = -30.0,
-    min_dur: float = 0.3,
+    min_dur: float = 0.25,
 ) -> list[tuple[float, float]]:
     """Find silent intervals using ffmpeg silencedetect."""
     cmd = [
@@ -72,7 +72,7 @@ def detect_silence_regions(
 
 def detect_nonspeech_regions_vad(
     audio_path: Path,
-    min_dur: float = 0.3,
+    min_dur: float = 0.25,
     threshold: float = 0.5,
 ) -> list[tuple[float, float]]:
     """Detect non-speech intervals via Silero VAD."""
@@ -179,8 +179,8 @@ def protect_words_from_cuts(
 def detect_adaptive_pauses(
     silence_regions: list[tuple[float, float]],
     words: list[dict[str, Any]],
-    threshold_ms: float = 450.0,
-    sentence_threshold_ms: float = 350.0,
+    threshold_ms: float = 300.0,
+    sentence_threshold_ms: float = 300.0,
     min_pause_ms: float = 180.0,
 ) -> list[dict[str, Any]]:
     """Build pause cuts with punctuation-aware thresholds and word protection."""

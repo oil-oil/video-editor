@@ -26,6 +26,7 @@ def probe_video_info(video_path: Path) -> dict[str, float | str]:
     data = json.loads(result.stdout)
     duration_s = float((data.get("format") or {}).get("duration", 0.0))
     has_audio = False
+    has_video = False
     width = 1920
     height = 1080
     fps = 30.0
@@ -33,6 +34,7 @@ def probe_video_info(video_path: Path) -> dict[str, float | str]:
         if s.get("codec_type") == "audio":
             has_audio = True
         elif s.get("codec_type") == "video":
+            has_video = True
             if s.get("width"):
                 width = int(s["width"])
             if s.get("height"):
@@ -46,6 +48,7 @@ def probe_video_info(video_path: Path) -> dict[str, float | str]:
     return {
         "duration_s": duration_s,
         "has_audio": has_audio,
+        "has_video": has_video,
         "width": width,
         "height": height,
         "fps": fps,
@@ -65,7 +68,11 @@ def extract_audio_wav(video_path: Path, output_wav: Path) -> Path:
         "-ac", "1",
         str(output_wav),
     ]
-    subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, check=True)
+    try:
+        subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, check=True)
+    except Exception:
+        output_wav.unlink(missing_ok=True)
+        raise
     return output_wav
 
 

@@ -1,22 +1,18 @@
 #!/usr/bin/env python3
-"""AI semantic paper edit planner using sliding-window LLM reasoning."""
+"""生成本地语义上下文并校验 Agent 写出的口播剪辑计划。"""
 
 from __future__ import annotations
 
 import array
 import json
 import math
-import os
 import re
 import sys
-import time
-import urllib.request
 import wave
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
-from common import format_timestamp, log, merge_intervals
+from common import format_timestamp, log
 
 END_PUNCTUATION = re.compile(r"[。！？!?；;]$")
 SOFT_PUNCTUATION = re.compile(r"[，,：:]$")
@@ -138,36 +134,29 @@ def build_prompt(atoms: list[dict[str, Any]]) -> str:
             f"[{item['id']} {format_timestamp(item['start'])}-{format_timestamp(item['end'])}] {item['text']}"
         )
     transcript_rows = "\n".join(rows)
-    return f"""You are making a PAPER EDIT for a spoken video tutorial.
-The full transcript is below as timestamped atomic utterances with explicit [PAUSE Xs] markers.
-Find every plausible contiguous range that is a recording mistake, while preserving the
-creator's intended explanation.
+    return f"""你正在为一段中文口播视频制作粗剪计划。
+下面是带有时间戳和原子片段编号的转录。请判断哪些话是录制失误、重讲废案或局部口误，哪些话应该保留。
 
-This is candidate generation, not final deletion. Favor recall, but every
-candidate still needs concrete structural evidence.
-Rely on transcript structure, spoken cadence, and explicit pauses.
+这是候选计划，不是让你追求多删。宁可漏掉一处，也不要删掉完整、有效的解释。停顿很长不等于前一句被放弃，必须结合前后文判断。
 
-Include:
-- an abandoned or stumbled earlier take followed by a clean restart;
-- an extended preliminary or rambling attempt (10-60s) with long pauses (notice [PAUSE Xs] markers) where the speaker hesitates, trials an incomplete explanation, and restarts/restructures the explanation from scratch; propose the preliminary attempt before the clean restart as an abandoned_take, with replacement_ids set to the clean restart take;
-- immediate repeated words, stuttered syllables, or delivery stumbles (e.g. speaker stumbles "这个平台他们" right before "他们就是提供..."; propose the stumble as delivery_cleanup);
-- local self-correction or slip-of-the-tongue where words are immediately superseded (e.g. speaker says "就是这个速转快。" then immediately corrects to "就这个转速快，然后..."; propose the slip as self_correction with replacement set to the corrected utterance);
-- false starts or aborted sentence lead-ins where the speaker starts a thought, abandons it, and restarts a different phrasing (e.g. "不过你最好是，" immediately followed by "不过这个门槛就比较高了"; propose the false start as delivery_cleanup or abandoned_take);
-- explicit instruction to restart, recording meta-talk, accidental live utterances, or off-topic remarks (e.g. telling pets to go away, personal subscription expiring comments, UI loading mutterings, premature outro remarks) that do not belong to the final tutorial;
-- an earlier duplicate take whose intended information is fully present in a later cleaner take;
-- a short dangling connector, repeated syllable, hesitation, or delivery fragment whose removal makes the surrounding spoken sentence more fluent without losing a claim.
+可以标记：
+- 明确说“重来”“不对，重新说”等提示后，被后面的完整重讲取代的前一遍；
+- 同一句中紧挨着重复的字词、明显结巴或口头修正，只删除重复或错误的局部；
+- 与教程无关的录制现场话、跑题话和明确的开拍/重录提示；
+- 后面有一遍内容相同、表达更完整的重复录制。
 
-Do NOT include:
-- fluent discourse markers merely because they are short;
-- sentence openings, introductions, or subject clauses (e.g. "今天这个视频的主题是...", "我们今天讲...", "关于这个...") merely because there are pauses or hesitations before the predicate; silence gaps are already trimmed by VAD, so keep the spoken opening words;
-- treating a sentence continuation, object, or predicate (e.g. "做一个视频...") as a "replacement" for the subject/introduction ("今天这个视频的主题是..."); a replacement MUST semantically restate or correct the removed thought, NOT merely continue it;
-- connected clauses, verb-object pairs, or modifier-noun phrases delivered across pauses (e.g. "做一个视频" followed by "录制的 skill" -> "做一个视频录制的 skill", or "开发一个" followed by "新的工具"); these form a single grammatical sentence, NOT a self_correction;
-- any passage where combining the utterances across pauses yields a natural, grammatically coherent sentence;
-- fluent finalized explanations that are part of the intended tutorial;
-- a repeated passage that adds a claim, example, number, warning, or troubleshooting detail;
-- stylistic shortening without clear evidence of a recording mistake.
+不要标记：
+- 仅因为短或有停顿的“然后”“就是”“这个”等自然口头语；
+- 句子的主语、铺垫或转折前半句。比如“但是”“但问题是”“不过”前面的内容可能是在建立上下文；
+- 跨停顿仍然能组成自然句子的主谓宾、动宾或修饰关系；
+- 后一句只是继续前一句，而不是纠正或重述前一句；
+- 带来新例子、数字、警告或排错细节的重复内容；
+- 超过 2.5 秒的局部 delivery_cleanup 或 self_correction。除非证据非常明确，否则不要删。
 
-Return strict JSON only in this shape:
+replacement_ids 必须是对被删内容的语义重述或纠正，不能只是后续句子的宾语、谓语或下一步动作。
+removed_quote 必须逐字覆盖 remove_start_id 到 remove_end_id 的全部内容。
+
+只返回严格 JSON：
 {{
   "edits": [
     {{
@@ -191,78 +180,38 @@ FULL TRANSCRIPT:
 """
 
 
+def build_semantic_context(segments: list[dict[str, Any]]) -> dict[str, Any]:
+    """给调用 Skill 的 Agent 准备转录上下文，不发起模型请求。"""
+    atoms = transcript_atoms(segments)
+    chunks = chunk_transcript_atoms(atoms, target_duration=210.0, overlap=35.0)
+    return {
+        "schema_version": 1,
+        "purpose": "由调用 Skill 的 Agent 根据带时间戳转录判断语义删减，不上传视频或调用外部语义模型。",
+        "atoms": atoms,
+        "windows": [
+            {
+                "window_id": index + 1,
+                "atom_ids": [atom["id"] for atom in chunk],
+                "prompt": build_prompt(chunk),
+            }
+            for index, chunk in enumerate(chunks)
+        ],
+    }
+
+
 def extract_json_from_text(text: str) -> dict[str, Any]:
     text = text.strip()
     if text.startswith("```"):
         text = re.sub(r"^```[a-zA-Z0-9_-]*\s*", "", text)
         text = re.sub(r"\s*```$", "", text)
     try:
-        data = json.loads(text.strip())
-        if isinstance(data, dict):
-            return data
-    except Exception:
-        pass
-    match = re.search(r"(\{[\s\S]*\})", text)
-    if match:
-        try:
-            return json.loads(match.group(1))
-        except Exception:
-            pass
-    return {"edits": []}
-
-
-def call_chat_completion(
-    api_base: str,
-    api_key: str,
-    model: str,
-    prompt: str,
-    timeout: int = 120,
-    enable_thinking: bool = False,
-) -> dict[str, Any]:
-    url = f"{api_base.rstrip('/')}/chat/completions"
-    payload = {
-        "model": model,
-        "messages": [
-            {
-                "role": "system",
-                "content": "You are a meticulous video paper editor. Return strict JSON only. Keep reason brief (under 20 words).",
-            },
-            {"role": "user", "content": prompt},
-        ],
-        "temperature": 0,
-        "stream": True,
-        "enable_thinking": enable_thinking,
-        "response_format": {"type": "json_object"},
-    }
-    data = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(
-        url,
-        data=data,
-        headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {api_key}",
-        },
-        method="POST",
-    )
-    with urllib.request.urlopen(req, timeout=timeout) as response:
-        full_text = []
-        for line in response:
-            line_str = line.decode("utf-8").strip()
-            if not line_str.startswith("data:"):
-                continue
-            body = line_str[5:].strip()
-            if body == "[DONE]":
-                break
-            try:
-                chunk = json.loads(body)
-                delta = (chunk.get("choices") or [{}])[0].get("delta") or {}
-                content = delta.get("content") or ""
-                if content:
-                    full_text.append(content)
-            except Exception:
-                pass
-        raw_text = "".join(full_text)
-    return extract_json_from_text(raw_text)
+        data = json.loads(text)
+    except (ValueError, TypeError) as exc:
+        raise ValueError("语义分析返回了无效 JSON，未生成剪辑计划") from exc
+    if (not isinstance(data, dict) or not isinstance(data.get("edits"), list)
+            or any(not isinstance(edit, dict) for edit in data["edits"])):
+        raise ValueError("语义分析响应缺少有效 edits 列表")
+    return data
 
 
 def grounding_text(text: str) -> str:
@@ -273,6 +222,7 @@ def candidates_from_plan(
     plan: dict[str, Any],
     atoms: list[dict[str, Any]],
     model: str,
+    max_local_cleanup_ms: float = 2500.0,
 ) -> list[dict[str, Any]]:
     by_id = {item["id"]: item for item in atoms}
     positions = {item["id"]: idx for idx, item in enumerate(atoms)}
@@ -298,7 +248,7 @@ def candidates_from_plan(
 
         category = raw.get("category", "delivery_cleanup")
         confidence = str(raw.get("confidence") or "medium").lower().strip()
-        if confidence == "low":
+        if confidence not in {"high", "medium"}:
             continue
 
         replacement_ids = [
@@ -309,6 +259,9 @@ def candidates_from_plan(
         ]
         duration_ms = (end - start) * 1000.0
         if duration_ms < 500.0:
+            continue
+
+        if category in {"delivery_cleanup", "self_correction"} and duration_ms > max_local_cleanup_ms:
             continue
 
         # Deleting without replacement is strictly for short local cleanups (<= 3.5s)
@@ -334,23 +287,11 @@ def candidates_from_plan(
         removed_quote_value = str(raw.get("removed_quote") or "").strip()
         gt_removed = grounding_text(removed_text)
 
-        # Grounding check with ellipsis support
+        # Require the quote to cover the complete removed range.
         matched = False
-        if removed_quote_value and grounding_text(removed_quote_value) in gt_removed:
+        if gt_removed and grounding_text(removed_quote_value) == gt_removed:
             matched = True
-        elif "..." in removed_quote_value or "…" in removed_quote_value:
-            parts = [
-                p.strip()
-                for p in re.split(r"\.{3,}|…+", removed_quote_value)
-                if p.strip()
-            ]
-            if len(parts) >= 2:
-                if (
-                    grounding_text(parts[0]) in gt_removed
-                    and grounding_text(parts[-1]) in gt_removed
-                ):
-                    matched = True
-        if not matched and len(gt_removed) > 0:
+        if not matched:
             continue
 
         replacement_text = "".join(by_id[item]["text"] for item in replacement_ids)
@@ -363,6 +304,11 @@ def candidates_from_plan(
             "spoken_end_ms": round(spoken_end * 1000.0),
             "removed_text": removed_text,
             "kept_text": replacement_text,
+            "replacement_ids": replacement_ids,
+            "replacement_intervals": [
+                [by_id[item]["start"] * 1000, by_id[item]["end"] * 1000]
+                for item in replacement_ids
+            ],
             "category": category,
             "confidence": confidence,
             "reason": str(raw.get("reason") or "").strip(),
@@ -373,48 +319,20 @@ def candidates_from_plan(
 
 def plan_video_cuts(
     segments: list[dict[str, Any]],
-    api_key: str,
+    semantic_plan: dict[str, Any] | None = None,
     *,
-    model: str = "qwen3.8-omni-flash",
-    api_base: str = "https://dashscope.aliyuncs.com/compatible-mode/v1",
-    concurrency: int = 5,
-    enable_thinking: bool = False,
+    model: str = "agent",
+    max_local_cleanup_ms: float = 2500.0,
 ) -> list[dict[str, Any]]:
-    """Generate global paper-edit candidates using sliding windows and concurrency."""
+    """Validate an Agent-written semantic plan; never calls an external model."""
     atoms = transcript_atoms(segments)
-    chunks = chunk_transcript_atoms(atoms, target_duration=210.0, overlap=35.0)
-    log(
-        f"Generated {len(atoms)} clause atoms across {len(chunks)} sliding window(s)."
+    if semantic_plan is None:
+        raise RuntimeError("语义判断由调用 Skill 的 Agent 完成；请先读取 semantic_context.json 并提交 semantic_plan.json")
+    if not isinstance(semantic_plan, dict):
+        raise ValueError("semantic_plan 必须是 JSON 对象")
+    all_candidates = candidates_from_plan(
+        semantic_plan, atoms, model, max_local_cleanup_ms=max_local_cleanup_ms
     )
-
-    all_candidates = []
-    if len(chunks) == 1:
-        prompt = build_prompt(chunks[0])
-        plan = call_chat_completion(
-            api_base, api_key, model, prompt, enable_thinking=enable_thinking
-        )
-        all_candidates = candidates_from_plan(plan, chunks[0], model)
-    else:
-        log(f"Scanning {len(chunks)} windows with concurrency={concurrency}...")
-
-        def _worker(idx_chunk):
-            idx, chunk = idx_chunk
-            p = build_prompt(chunk)
-            resp = call_chat_completion(
-                api_base, api_key, model, p, enable_thinking=enable_thinking
-            )
-            return candidates_from_plan(resp, chunk, model)
-
-        with ThreadPoolExecutor(max_workers=concurrency) as executor:
-            futures = [
-                executor.submit(_worker, (i, c)) for i, c in enumerate(chunks)
-            ]
-            for f in as_completed(futures):
-                try:
-                    cands = f.result()
-                    all_candidates.extend(cands)
-                except Exception as exc:
-                    log(f"⚠️  Chunk scan error: {exc}")
 
     # Deduplicate candidates across overlapping windows
     all_candidates.sort(key=lambda c: (c["start_ms"], c["end_ms"]))
@@ -439,10 +357,15 @@ def plan_video_cuts(
         else:
             deduped.append(c)
 
-    log(
-        f"AI Semantic Planner: found {len(deduped)} candidate(s) for mistake removal."
-    )
-    return deduped
+    # Conservative global check: a replacement must survive every proposed cut.
+    safe = [c for c in deduped if not any(
+        max(rs, other["start_ms"]) < min(re, other["end_ms"])
+        for rs, re in c["replacement_intervals"] for other in deduped
+    )]
+    if len(safe) != len(deduped):
+        log(f"保留了 {len(deduped) - len(safe)} 个存在替代冲突的候选片段。")
+    log(f"Agent Semantic Planner: found {len(safe)} validated candidate(s).")
+    return safe
 
 
 def refine_cut_boundaries_to_minima(
@@ -461,39 +384,24 @@ def refine_cut_boundaries_to_minima(
     except Exception:
         return cuts
 
+    if sys.byteorder != "little":
+        pcm.byteswap()
     refined = []
-    max_amp = 32768.0
-    half_win = int(sr * (search_window_ms / 1000.0) / 2)
-
+    half_win = int(sr * search_window_ms / 2000.0)
     for c in cuts:
-        start_samp = int(c["start_ms"] * sr / 1000.0)
-        end_samp = int(c["end_ms"] * sr / 1000.0)
-
-        # Snap start
-        s_from = max(0, start_samp - half_win)
-        s_to = min(len(pcm), start_samp + half_win)
-        best_s = start_samp
-        min_s_val = float("inf")
-        for i in range(s_from, s_to):
-            val = abs(pcm[i])
-            if val < min_s_val:
-                min_s_val = val
-                best_s = i
-
-        # Snap end
-        e_from = max(0, end_samp - half_win)
-        e_to = min(len(pcm), end_samp + half_win)
-        best_e = end_samp
-        min_e_val = float("inf")
-        for i in range(e_from, e_to):
-            val = abs(pcm[i])
-            if val < min_e_val:
-                min_e_val = val
-                best_e = i
-
+        start = max(0, math.ceil(c["start_ms"] * sr / 1000.0))
+        end = min(len(pcm), math.floor(c["end_ms"] * sr / 1000.0))
+        if end <= start:
+            raise ValueError("语义删除区间超出音频范围")
+        # Only shrink a cut; waveform snapping must never consume retained speech.
+        best_s = min(range(start, min(end, start + half_win + 1)),
+                     key=lambda i: (abs(pcm[i]), abs(i - start)))
+        best_e = min(range(max(start, end - half_win), end),
+                     key=lambda i: (abs(pcm[i]), abs(i - end)))
         new_c = dict(c)
-        new_c["start_ms"] = round(best_s * 1000.0 / sr)
-        new_c["end_ms"] = round(best_e * 1000.0 / sr)
+        if best_s < best_e:
+            new_c["start_ms"] = best_s * 1000.0 / sr
+            new_c["end_ms"] = best_e * 1000.0 / sr
         new_c["duration_ms"] = new_c["end_ms"] - new_c["start_ms"]
         refined.append(new_c)
     return refined

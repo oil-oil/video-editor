@@ -1,11 +1,11 @@
 ---
 name: video-editor
-description: "智能剪辑通用视频文件（MP4、MOV、MKV 等）：自动检测语音停顿、气声与死寂空白，结合大模型（如 Qwen 3.8 Omni Flash）并发滑窗识别口误重讲、即时字词打架、假起步和废案，通过 ffmpeg 硬件加速进行高保真无缝切片导出，并支持切口微淡化消除爆音与导出审计报告。用户提供现成视频文件、要求自动粗剪口误死寂停顿、压缩讲解节奏或导出剪辑时间线时使用。不用于 Screen Studio 工程剪辑（Screen Studio 工程请使用 screen-studio-editor），不负责字幕生成（字幕请使用 oil-subtitle）。"
+description: "粗剪现成 MP4、MOV、MKV 视频：压缩停顿、识别口误重讲与废案，导出新视频、剪辑计划和审计报告。用户要求自动粗剪、压缩口播节奏或导出剪辑时间线时使用。不用于 Screen Studio 原生工程（交给 screen-studio-editor），不生成字幕（交给 oil-subtitle）。"
 ---
 
 # Video Editor
 
-智能粗剪通用视频文件（MP4、MOV、MKV 等）。无需 Screen Studio 工程文件，直接基于现成视频文件完成“气口/死寂停顿切除 + 语义口误与废案删减 + 接缝平滑微淡化 + 硬件加速重构导出”。
+压缩停顿、识别口误废案，生成可复核的剪辑计划，再导出新视频。语音转文字由 ASR 完成，语义判断由调用这个 Skill 的 Agent 根据带时间戳的转录亲自完成；两步都可能出错，正式使用前需要检查报告与接缝听感。
 
 后续字幕生成交给 `oil-subtitle`。
 
@@ -13,17 +13,17 @@ description: "智能剪辑通用视频文件（MP4、MOV、MKV 等）：自动�
 
 ## 目标
 
-为口播、教程、会议录像、vlog 等各类视频创作者解决剪辑中最繁琐的“粗剪阶段”：
-1. **彻底消除死寂停顿**：自适应能量底噪与 VAD 双重检测，标点边界敏感识别（句末 350ms，词间 450ms），并留出舒适气口（180ms），绝不吞字。
-2. **精准切除口误与废案**：基于阿里百炼 FunAudio ASR 字级转录，通过逗号/句号微粒原子化切分与滑窗并发 LLM 推理（默认 Qwen 3.8 Omni Flash），准确召回“假起步”、“说错重讲”、“字词打架”等口误。
-3. **音画无缝衔接**：切点吸附至局部波形振幅极小值，拼接处施加 15ms 音频微淡化（crossfade/afade），彻底杜绝跳切时的“爆音”、“咔哒”杂音。
-4. **一键无损或极速导出**：macOS 原生 VideoToolbox 硬件加速导出；同时支持免重编码的流拷贝模式（`--fast-copy`）。
+适合以人声讲解为主的视频；会议、音乐和依赖长停顿的演示需要逐段复核。
+1. **压缩停顿**：结合能量检测、VAD 和 ASR 字保护，统一使用 300ms 的连续无声门限，保留约 180ms 气口。底层探测窗口是 250ms，只负责找候选；只有实际无声超过 300ms 才会剪。
+2. **识别口误废案**：按子句切分并滑窗分析；引用必须覆盖完整删除话术，替代话术必须在最终计划中保留。
+3. **减轻接缝杂音**：波形吸附只允许缩小删除区间；正常编码在各段首尾施加 15ms `afade`，不保证所有接缝听感相同。
+4. **安全导出**：默认重编码，禁止覆盖源片；`--fast-copy` 仅用于近似预览，可能保留额外内容，不应用淡化。
 
 ---
 
-## API Key 配置入口
+## 外部服务与语义判断边界
 
-云端转录与语义剪辑前，先读[API Key 配置与业务读取](references/api-key-setup.md)。已有安全配置直接复用，缺少时由用户亲自填写固定页面，不在聊天或命令参数中传 Key。
+只有语音转文字需要 DashScope API Key，先读[API Key 配置与业务读取](references/api-key-setup.md)。语义判断不调用外部模型或模型接口；Agent 读取本地转录上下文后，自己写出语义删减计划。已有安全配置直接复用，缺少时由用户亲自填写固定页面，不在聊天或命令参数中传 Key。
 
 ---
 
@@ -32,26 +32,28 @@ description: "智能剪辑通用视频文件（MP4、MOV、MKV 等）：自动�
 ### 1. 基础依赖
 
 - `ffmpeg`、`ffprobe`：已安装在系统 PATH 或 `/opt/homebrew/bin/`。
-- `bl` CLI（阿里百炼 CLI）或 DashScope API Key。
-- Python 3.10+。
+- DashScope API Key（仅用于 ASR）。优先使用 `bl` CLI 的 `fun-asr`，未安装 bl 时使用 SDK 的 `paraformer-realtime-v2`。
+- Python 3.10+；首次运行 `bash setup.sh` 创建 `.venv` 并安装依赖。钥匙串配置与读取另需 Node.js 22.18+，详见凭据说明。
+- 以下命令在 Skill 目录执行；其他目录使用 `bash <SKILL_DIR>/scripts/run.sh ...`。
 
-### 2. API Key 与模型配置
+### 2. Agent 语义判断配置
 
 配置文件路径：`~/.config/video-editor/config.json`（可选，不存在时使用默认值）：
 
 ```json
 {
-  "model": "qwen3.8-omni-flash",
-  "api_base": "https://dashscope.aliyuncs.com/compatible-mode/v1",
-  "pause_threshold_ms": 450.0,
-  "sentence_threshold_ms": 350.0,
+  "semantic_planner": "calling-agent",
+  "semantic_max_local_cleanup_ms": 2500.0,
+  "pause_threshold_ms": 300.0,
+  "sentence_threshold_ms": 300.0,
   "min_pause_ms": 180.0,
-  "crossfade_ms": 15.0,
-  "concurrency": 5
+  "crossfade_ms": 15.0
 }
 ```
 
-- API Key 读取顺序：`DASHSCOPE_API_KEY` 环境变量 -> `~/.bailian/config.json` -> `~/.config/video-editor/config.json`。
+- `semantic_planner` 固定为 `calling-agent`，表示语义判断由当前调用 Skill 的 Agent 完成，不读取模型地址、不保存模型 Key。
+- `semantic_max_local_cleanup_ms` 是局部口误的安全上限，超过 2.5 秒的 `delivery_cleanup` 或 `self_correction` 默认拒绝。
+- `scripts/run.sh` 统一使用 `.venv`：只为 ASR 复用环境变量或已有 bl 配置，缺少时通过凭据组件从系统库注入。普通配置 JSON 不保存 Key。
 
 ---
 
@@ -59,53 +61,90 @@ description: "智能剪辑通用视频文件（MP4、MOV、MKV 等）：自动�
 
 ### 1. 默认智能剪辑（推荐）
 
-对源视频进行完整分析并导出剪辑后的新视频：
+对源视频进行完整分析并导出剪辑后的新视频。语义删减分成两步，避免把一个外部模型偷偷当成“自动裁判”：
 
 ```bash
-python3 scripts/video_editor.py cut /path/to/video.mp4 -o /path/to/video_edited.mp4
+bash scripts/run.sh cut /path/to/video.mp4
+```
+
+第一次运行会完成 ASR、VAD 和停顿分析，并生成 `semantic_context.json`。调用 Skill 的 Agent 读取这个文件，按其中的 JSON 规则判断口误，写出同目录的 `semantic_plan.json`，然后继续运行：
+
+```bash
+bash scripts/run.sh cut /path/to/video.mp4 --semantic-plan /path/to/.video.mp4_work/semantic_plan.json -o /path/to/video_edited.mp4
 ```
 
 工作流程：
 1. **音频提取与声学校准**：提取 16kHz WAV 音频，自适应计算能量分布分位数与底噪。
-2. **高精度 ASR 字级识别**：调用百炼 FunAudio ASR 生成包含字级时间戳的转录文本。
-3. **自适应停顿检测与文字保护**：结合 Silero VAD 与句尾标点感知切分死寂停顿，对识别出的文字施加保护垫，严防切字。
-4. **全片语义口误滑窗规划**：按子句标点切分为原子片段，滑窗送入 Qwen 3.8 Omni Flash 识别口误废案。
-5. **切点波形极小值吸附**：将删减区间微调至最近的局部静音/波形低谷点。
+2. **高精度 ASR 字级识别**：调用已选择的 ASR，检查转录格式与字时间戳；缺失时停止。
+3. **自适应停顿检测与文字保护**：结合 Silero VAD 与句尾标点感知切分死寂停顿，对识别出的文字施加保护垫。
+4. **Agent 语义口误规划**：按子句标点切分为原子片段，生成带时间戳的本地上下文；由当前 Agent 阅读上下文，依据“宁可漏删，不要误删”的规则写出 `semantic_plan.json`，程序只负责校验编号、原话覆盖、替代冲突和安全时长。
+5. **切点波形极小值吸附**：只在删除区间内微调，随后重新检查保留文字。
 6. **硬件加速拼接与微淡化**：采用 `h264_videotoolbox` 快速重编码，每段保留切片首尾施加 15ms `afade`。
-7. **生成 Markdown 审计报告**：在工作目录生成剪辑明细对照表。
+7. **生成 Markdown 审计报告**：记录实际配置，分别标明计划时长、导出状态和实测时长。
+
+### Agent 写 `semantic_plan.json` 的规则
+
+Agent 只根据 `semantic_context.json` 里的文字和时间戳判断，不重新听猜，也不把“有停顿”直接当成废话。每个删减都要能回答三个问题：前一句为什么是废案、后一句是否真的重述或纠正、删掉后句子是否仍然完整。
+
+计划文件最小格式如下：
+
+```json
+{
+  "source": "复制 semantic_context.json 里的 source",
+  "edits": [
+    {
+      "remove_start_id": "U0007",
+      "remove_end_id": "U0007",
+      "cut_until_id": "U0008",
+      "replacement_ids": ["U0012"],
+      "removed_quote": "不对，重新说。",
+      "replacement_quote": "点击右边的导出按钮。",
+      "category": "explicit_restart",
+      "confidence": "high",
+      "reason": "后面明确重述同一条操作，前一句被说停并放弃。"
+    }
+  ]
+}
+```
+
+`removed_quote` 必须覆盖完整的待删原话；`replacement_ids` 只能指向真正重述或纠正的片段。没有明确证据就返回空的 `edits`，不要为了让视频更紧凑而扩大删除范围。程序还会拒绝低置信度候选、替代片段被同时删除的候选，以及超过 2.5 秒的局部口误候选。
 
 ---
 
 ### 2. 预览分析与试运行（Dry-run）
 
-若只想查看哪些停顿和口误会被切除，而不实际渲染大视频：
+若只想生成上下文、先让 Agent 判断而不实际渲染大视频：
 
 ```bash
-python3 scripts/video_editor.py cut /path/to/video.mp4 --dry-run
+bash scripts/run.sh cut /path/to/video.mp4
 ```
 
-- 运行后在临时工作目录 `.video_work/` 下生成 `video_edit_report.md`。
+- 在源文件旁的 `.<name>.<ext>_work/` 生成 `semantic_context.json`；Agent 写完 `semantic_plan.json` 并再次运行带 `--semantic-plan` 的命令后，才会生成 `<name>_edit_plan.json` 和 `<name>_edit_report.md`。
+- `semantic_context.json` 包含原子片段、停顿标记和逐窗口提示；它只供 Agent 阅读，不上传视频。
 - 报告中包含：原始时长、预计时长、压缩比例、每一处口误删减区间、原话、订正保留话术与删减理由。
 
 ---
 
-### 3. 极速流拷贝剪辑（Fast-copy）
+### 3. 近似流拷贝预览（Fast-copy）
 
-适用于对速度要求极高且不需要重编码的场景（按关键帧直接分片串接）：
+仅用于接受关键帧边界偏差的快速预览。报告记录实测时长与计划偏差；需要准确删除口误时使用默认重编码：
 
 ```bash
-python3 scripts/video_editor.py cut /path/to/video.mp4 --fast-copy -o /path/to/video_fast.mp4
+bash scripts/run.sh cut /path/to/video.mp4 --semantic-plan /path/to/.video.mp4_work/semantic_plan.json --fast-copy -o /path/to/video_fast.mp4
 ```
 
 ---
 
 ### 4. 离线复核与重新渲染（Review / Re-render）
 
-基于已有的剪辑工作目录审查或调整参数重新渲染：
+读取已有计划，不调用模型或读取 Key。需要调整时，编辑计划中的 `kept_intervals`（源视频毫秒坐标），再 render；报告的实际保留区间会同步更新，原话与理由仍来自分析阶段：
 
 ```bash
-python3 scripts/video_editor.py review /path/to/video.mp4
+bash scripts/run.sh review /path/to/video.mp4
+bash scripts/run.sh render /path/to/video.mp4 -o /path/to/video_edited.mp4
 ```
+
+更换源视频后必须重新分析。已有成片默认不覆盖，明确需要替换时加 `--overwrite`；该选项也不能覆盖源片。分析失败可直接重试，相同源文件的有效音频和转录会复用，原有成功计划不会被失败结果替换。
 
 ---
 
@@ -113,9 +152,9 @@ python3 scripts/video_editor.py review /path/to/video.mp4
 
 1. **剪辑后视频**：
    - 命名：默认在源文件同目录下生成 `<name>_edited.<ext>`，或由 `-o` 指定。
-   - 编码：保持原画质尺寸与帧率，音频 192k AAC，首尾淡化平滑无爆音。
+   - 编码：默认 H.264 与 192k AAC 重编码，不缩放画面；重编码有损，帧边界存在量化误差。临时导出经轨道与时长检查后才写入目标文件。
 2. **审计报告**：
-   - 保存在源文件旁的 `.<name>_work/<name>_edit_report.md`。
+   - 保存在源文件旁的 `.<name>.<ext>_work/<name>_edit_report.md`。
    - 提供 Markdown 表格，清晰记录各处删减的前后文与删减理由。
 
 ---
@@ -123,10 +162,11 @@ python3 scripts/video_editor.py review /path/to/video.mp4
 ## 资源导航
 
 - `references/api-key-setup.md`: API Key 安全配置、环境绑定与凭据读取规范。
-- `scripts/video_editor.py`: 统一 CLI 入口工具。
+- `scripts/run.sh`: 统一环境与凭据入口。
+- `scripts/video_editor.py`: 分析、离线复核与按计划渲染。
 - `scripts/audio_extractor.py`: 音频提取与声学能量分析。
 - `scripts/transcriber.py`: 阿里百炼 ASR 转录模块（支持 `bl` CLI 与 SDK）。
 - `scripts/silence_detector.py`: 自适应静音检测、VAD 与字保护算法。
-- `scripts/semantic_planner.py`: 子句原子化切分与 Qwen 3.8 Omni Flash 滑窗语义规划。
+- `scripts/semantic_planner.py`: 子句原子化切分、Agent 提示构造和语义计划校验；不发起任何模型请求。
 - `scripts/video_assembler.py`: VideoToolbox 硬件切片组装、15ms 音频微淡化与报告生成。
-- `tests/`: 完整单元测试集。
+- `tests/`: 基础算法与业务回归测试。维护时运行 `.venv/bin/python3 -m unittest discover -s tests -v`，覆盖源片保护、缓存失效、ASR 格式、缺少 Agent 计划、替代冲突和实际渲染；不得以基础函数测试通过代替完整流程验证。
