@@ -61,8 +61,9 @@ def _convert_bailian_output(raw_data: dict[str, Any]) -> list[dict[str, Any]]:
 
         begin = s.get("begin_time", s.get("start_time", s.get("start", 0)))
         end = s.get("end_time", s.get("stop_time", s.get("end", begin)))
-        start_s = _ms(begin) if float(begin) > 500 else round(float(begin), 3)
-        end_s = _ms(end) if float(end) > 500 else round(float(end), 3)
+        is_ms = ("begin_time" in s or "end_time" in s or float(end) > 60.0 or float(begin) > 60.0)
+        start_s = round(float(begin) / 1000.0, 3) if is_ms else round(float(begin), 3)
+        end_s = round(float(end) / 1000.0, 3) if is_ms else round(float(end), 3)
 
         words: list[dict[str, Any]] = []
         for w in s.get("words") or []:
@@ -71,8 +72,9 @@ def _convert_bailian_output(raw_data: dict[str, Any]) -> list[dict[str, Any]]:
                 continue
             w_begin = w.get("begin_time", w.get("start_time", w.get("start", 0)))
             w_end = w.get("end_time", w.get("stop_time", w.get("end", w_begin)))
-            w_start_s = _ms(w_begin) if float(w_begin) > 500 else round(float(w_begin), 3)
-            w_end_s = _ms(w_end) if float(w_end) > 500 else round(float(w_end), 3)
+            w_is_ms = is_ms or ("begin_time" in w or "end_time" in w or float(w_end) > 60.0 or float(w_begin) > 60.0)
+            w_start_s = round(float(w_begin) / 1000.0, 3) if w_is_ms else round(float(w_begin), 3)
+            w_end_s = round(float(w_end) / 1000.0, 3) if w_is_ms else round(float(w_end), 3)
             words.append({"word": token_text, "start": w_start_s, "end": w_end_s})
 
         segments.append({

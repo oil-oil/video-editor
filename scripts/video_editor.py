@@ -243,6 +243,7 @@ def main():
     cut_parser.add_argument("--fast-copy", action="store_true", help="Fast stream-copy cut without re-encoding (snaps to keyframes)")
     cut_parser.add_argument("--model", type=str, help="AI reasoning model (default: qwen3.8-omni-flash)")
     cut_parser.add_argument("--thinking", action="store_true", help="Enable deep thinking reasoning tokens (higher cost/latency, default: disabled)")
+    cut_parser.add_argument("--pause-threshold", type=float, help="Pause threshold in ms (default: 450.0)")
     cut_parser.add_argument("--work-dir", type=Path, help="Custom directory to store intermediate files")
 
     # review command (alias to dry-run)
@@ -250,6 +251,7 @@ def main():
     review_parser.add_argument("video", type=Path, help="Path to input video file")
     review_parser.add_argument("--thinking", action="store_true", help="Enable deep thinking reasoning tokens")
     review_parser.add_argument("--model", type=str, help="AI reasoning model")
+    review_parser.add_argument("--pause-threshold", type=float, help="Pause threshold in ms (default: 450.0)")
     review_parser.add_argument("--work-dir", type=Path, help="Custom directory to store intermediate files")
 
     args = parser.parse_args()
@@ -260,6 +262,7 @@ def main():
             dry_run=True,
             model=args.model,
             thinking=args.thinking,
+            pause_threshold_ms=args.pause_threshold,
             work_dir=args.work_dir,
         )
         print(json.dumps(res, ensure_ascii=False, indent=2))
