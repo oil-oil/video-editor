@@ -1,0 +1,178 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="440" viewBox="0 0 1200 440" role="img" aria-labelledby="title desc">
+  <title id="title">video-editor - 智能通用视频粗剪与口误废案剔除</title>
+  <desc id="desc">全自动通用视频粗剪工具：基于 Silero VAD、自适应能量底噪与 Qwen 3.8 Omni Flash 大模型滑窗，精准切除死寂停顿与重复口误，硬件微淡化导出无爆音成片。</desc>
+
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B0F19"/>
+      <stop offset="50%" stop-color="#0D1424"/>
+      <stop offset="100%" stop-color="#080C14"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#818CF8"/>
+    </linearGradient>
+    <linearGradient id="cutGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EF4444" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#EF4444" stop-opacity="0.08"/>
+    </linearGradient>
+    <linearGradient id="keepGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10B981" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#10B981" stop-opacity="0.08"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="80%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#38BDF8" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="1200" height="440" rx="24" fill="url(#bgGrad)"/>
+  <rect width="1200" height="440" rx="24" fill="url(#glow)"/>
+  <rect width="1196" height="436" x="2" y="2" rx="22" fill="none" stroke="#1E293B" stroke-width="1.5"/>
+
+  <!-- Left: Title & Product Value -->
+  <g transform="translate(60, 52)">
+    <!-- Category Badge -->
+    <g>
+      <rect width="260" height="28" rx="14" fill="#0F243A" stroke="#0284C7" stroke-width="1"/>
+      <circle cx="14" cy="14" r="4" fill="#38BDF8"/>
+      <text x="26" y="18" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12" font-weight="600" fill="#38BDF8" letter-spacing="0.8">AI VIDEO ROUGH-CUT SKILL</text>
+    </g>
+
+    <!-- Main Title -->
+    <text x="0" y="80" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="46" font-weight="800" fill="#F8FAFC" letter-spacing="-0.5">video-editor</text>
+    
+    <!-- Subtitle -->
+    <text x="0" y="116" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="18" font-weight="500" fill="#94A3B8">现成通用视频智能粗剪 · 停顿死寂消除 · 口误废案剔除</text>
+    <text x="0" y="142" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="14" font-weight="400" fill="#64748B">无需绑定工程文件 · 支持 MP4 / MOV / MKV · 原生硬件微淡化导出</text>
+
+    <!-- Feature Value Tags -->
+    <g transform="translate(0, 172)">
+      <!-- Tag 1 -->
+      <g>
+        <rect width="245" height="34" rx="8" fill="#131D2E" stroke="#1E293B" stroke-width="1"/>
+        <text x="12" y="22" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="13" font-weight="600" fill="#38BDF8">🎯 92.3% 跨工程宏观精确度</text>
+      </g>
+      <!-- Tag 2 -->
+      <g transform="translate(255, 0)">
+        <rect width="250" height="34" rx="8" fill="#131D2E" stroke="#1E293B" stroke-width="1"/>
+        <text x="12" y="22" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="13" font-weight="600" fill="#10B981">🛡️ 字级 ASR 保护 · 严防误切吞字</text>
+      </g>
+    </g>
+    <g transform="translate(0, 214)">
+      <!-- Tag 3 -->
+      <g>
+        <rect width="245" height="34" rx="8" fill="#131D2E" stroke="#1E293B" stroke-width="1"/>
+        <text x="12" y="22" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="13" font-weight="600" fill="#A855F7">🧠 Qwen 3.8 Omni 滑窗推理</text>
+      </g>
+      <!-- Tag 4 -->
+      <g transform="translate(255, 0)">
+        <rect width="250" height="34" rx="8" fill="#131D2E" stroke="#1E293B" stroke-width="1"/>
+        <text x="12" y="22" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="13" font-weight="600" fill="#F59E0B">🔊 15ms 接缝微淡化 · 彻底杜绝爆音</text>
+      </g>
+    </g>
+
+    <!-- Quick Terminal Install Box -->
+    <g transform="translate(0, 272)">
+      <rect width="505" height="46" rx="10" fill="#070A10" stroke="#1E293B" stroke-width="1.2"/>
+      <!-- Terminal prompt dots -->
+      <circle cx="18" cy="23" r="4" fill="#EF4444"/>
+      <circle cx="30" cy="23" r="4" fill="#F59E0B"/>
+      <circle cx="42" cy="23" r="4" fill="#10B981"/>
+      <text x="62" y="28" font-family="ui-monospace, 'SFMono-Regular', Menlo, monospace" font-size="14" fill="#94A3B8">npx skills add oil-oil/video-editor</text>
+      <rect x="442" y="10" width="50" height="26" rx="6" fill="#1E293B"/>
+      <text x="454" y="27" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="600" fill="#94A3B8">CLI</text>
+    </g>
+  </g>
+
+  <!-- Right: Real Project Mechanism (Waveform + Timeline Cuts + Crossfade) -->
+  <g transform="translate(595, 42)" filter="url(#shadow)">
+    <!-- Board container -->
+    <rect width="545" height="356" rx="16" fill="#0C1220" stroke="#1E293B" stroke-width="1.5"/>
+
+    <!-- Board Header -->
+    <g transform="translate(20, 16)">
+      <rect width="180" height="22" rx="6" fill="#1E293B"/>
+      <text x="10" y="15" font-family="ui-monospace, 'SFMono-Regular', Menlo, monospace" font-size="11" font-weight="600" fill="#94A3B8">AUTOMATED PIPELINE</text>
+      <text x="420" y="15" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="500" fill="#64748B">VideoToolbox HW</text>
+    </g>
+
+    <!-- Track 1: Raw Waveform & Silence Detection -->
+    <g transform="translate(20, 50)">
+      <rect width="505" height="68" rx="8" fill="#101726" stroke="#1E293B" stroke-width="1"/>
+      <text x="12" y="18" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" fill="#64748B">TRACK 1: 原始波形与 VAD 自适应死寂检测</text>
+      
+      <!-- Waveform representation -->
+      <!-- Spoken 1 -->
+      <path d="M 12 42 Q 22 26 32 42 T 52 42 T 72 42 T 92 42 T 112 42 T 132 42 T 152 42" fill="none" stroke="#38BDF8" stroke-width="2"/>
+      <!-- Silence Cut (Red highlight) -->
+      <rect x="160" y="24" width="85" height="36" rx="4" fill="url(#cutGrad)" stroke="#EF4444" stroke-width="1" stroke-dasharray="3 3"/>
+      <text x="175" y="46" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" font-weight="700" fill="#EF4444">✂ 停顿死等</text>
+      <!-- Spoken 2 (Stumble) -->
+      <path d="M 255 42 Q 265 30 275 42 T 295 42 T 315 42 T 335 42 T 355 42" fill="none" stroke="#F87171" stroke-width="2"/>
+      <!-- Silence Cut 2 -->
+      <rect x="365" y="24" width="45" height="36" rx="4" fill="url(#cutGrad)" stroke="#EF4444" stroke-width="1" stroke-dasharray="3 3"/>
+      <!-- Spoken 3 (Clean) -->
+      <path d="M 420 42 Q 430 24 440 42 T 460 42 T 480 42 T 495 42" fill="none" stroke="#34D399" stroke-width="2"/>
+    </g>
+
+    <!-- Track 2: ASR Word Protection & Semantic Mistake Elimination -->
+    <g transform="translate(20, 130)">
+      <rect width="505" height="74" rx="8" fill="#101726" stroke="#1E293B" stroke-width="1"/>
+      <text x="12" y="18" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" fill="#64748B">TRACK 2: 字级保护垫与 Qwen 3.8 Omni 口误识别</text>
+      
+      <!-- Word boxes with 60ms protection pads -->
+      <g transform="translate(12, 28)">
+        <rect width="68" height="32" rx="4" fill="#064E3B" stroke="#10B981" stroke-width="1"/>
+        <text x="8" y="20" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" fill="#ECFDF5">有效讲解</text>
+        <rect x="74" y="28" width="62" height="32" rx="4" fill="#064E3B" stroke="#10B981" stroke-width="1"/>
+        <text x="82" y="20" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" fill="#ECFDF5">内容保护</text>
+      </g>
+      
+      <!-- Semantic Mistake Cut -->
+      <g transform="translate(248, 28)">
+        <rect width="125" height="32" rx="4" fill="#450A0A" stroke="#EF4444" stroke-width="1"/>
+        <text x="10" y="20" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="600" fill="#FCA5A5">✖ 口误推倒重讲</text>
+      </g>
+
+      <!-- Clean restart word box -->
+      <g transform="translate(415, 28)">
+        <rect width="78" height="32" rx="4" fill="#064E3B" stroke="#10B981" stroke-width="1"/>
+        <text x="8" y="20" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" fill="#ECFDF5">定版新起句</text>
+      </g>
+    </g>
+
+    <!-- Track 3: Final Seamless Reconstructed Timeline -->
+    <g transform="translate(20, 216)">
+      <rect width="505" height="66" rx="8" fill="#101726" stroke="#1E293B" stroke-width="1"/>
+      <text x="12" y="18" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" fill="#64748B">TRACK 3: 硬件微淡化无缝重组成片 (Crossfade 15ms)</text>
+
+      <!-- Assembled slices -->
+      <g transform="translate(12, 26)">
+        <rect width="210" height="28" rx="5" fill="#065F46" stroke="#34D399" stroke-width="1"/>
+        <text x="16" y="19" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12" font-weight="600" fill="#ECFDF5">Slice 1 · 紧凑原声</text>
+      </g>
+      <!-- Crossfade joint badge -->
+      <g transform="translate(216, 26)">
+        <circle cx="10" cy="14" r="8" fill="#0284C7"/>
+        <text x="6" y="17" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" font-weight="bold" fill="#FFF">⇄</text>
+      </g>
+      <g transform="translate(230, 26)">
+        <rect width="263" height="28" rx="5" fill="#065F46" stroke="#34D399" stroke-width="1"/>
+        <text x="16" y="19" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12" font-weight="600" fill="#ECFDF5">Slice 2 · 订正重录句 (无缝过渡)</text>
+      </g>
+    </g>
+
+    <!-- Bottom summary stats bar -->
+    <g transform="translate(20, 296)">
+      <rect width="505" height="44" rx="8" fill="#131B2E" stroke="#1E293B" stroke-width="1"/>
+      <text x="14" y="27" font-family="ui-monospace, 'SFMono-Regular', Menlo, monospace" font-size="12" fill="#94A3B8">PROVEN PERFORMANCE:</text>
+      <text x="185" y="27" font-family="ui-monospace, 'SFMono-Regular', Menlo, monospace" font-size="12" font-weight="bold" fill="#38BDF8">53m 原片 → 20m 紧凑成片 (省时 62%)</text>
+      <circle cx="485" cy="22" r="4" fill="#10B981"/>
+    </g>
+  </g>
+</svg>

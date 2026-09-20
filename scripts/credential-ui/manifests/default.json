@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "id": "video-editor",
+  "label": "DashScope 百炼 API Key",
+  "credential": "video-editor/dashscope/default",
+  "ui": {
+    "title": "输入密钥",
+    "placeholder": "粘贴 API Key"
+  }
+}

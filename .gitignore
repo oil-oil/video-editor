@@ -12,3 +12,6 @@ venv/
 *.wav
 *.m4a
 .*_work/
+node_modules/
+node_modules
+dist/

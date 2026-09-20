@@ -21,6 +21,12 @@ description: "智能剪辑通用视频文件（MP4、MOV、MKV 等）：自动�
 
 ---
 
+## API Key 配置入口
+
+云端转录与语义剪辑前，先读[API Key 配置与业务读取](references/api-key-setup.md)。已有安全配置直接复用，缺少时由用户亲自填写固定页面，不在聊天或命令参数中传 Key。
+
+---
+
 ## 环境与配置
 
 ### 1. 基础依赖
@@ -116,6 +122,7 @@ python3 scripts/video_editor.py review /path/to/video.mp4
 
 ## 资源导航
 
+- `references/api-key-setup.md`: API Key 安全配置、环境绑定与凭据读取规范。
 - `scripts/video_editor.py`: 统一 CLI 入口工具。
 - `scripts/audio_extractor.py`: 音频提取与声学能量分析。
 - `scripts/transcriber.py`: 阿里百炼 ASR 转录模块（支持 `bl` CLI 与 SDK）。
