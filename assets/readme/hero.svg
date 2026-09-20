@@ -1,195 +1,229 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="440" viewBox="0 0 1200 440" role="img" aria-labelledby="title desc">
-  <title id="title">video-editor - 智能通用视频粗剪与口误废案剔除</title>
-  <desc id="desc">全自动通用视频粗剪工具：基于 Silero VAD、自适应能量底噪与 Qwen 3.8 Omni Flash 大模型滑窗，精准切除死寂停顿与重复口误，硬件微淡化导出无爆音成片。</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400" viewBox="0 0 1200 400" role="img" aria-labelledby="title desc">
+  <title id="title">video-editor</title>
+  <desc id="desc">智能视频粗剪工具：切除无声停顿与口误废案，导出紧凑成片。</desc>
 
   <defs>
-    <!-- Light Background Gradient -->
-    <linearGradient id="bgGradLight" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" stop-color="#FFFFFF"/>
-      <stop offset="60%" stop-color="#F8FAFC"/>
-      <stop offset="100%" stop-color="#F1F5F9"/>
+      <stop offset="100%" stop-color="#F8FAFC"/>
     </linearGradient>
 
-    <!-- Subtle Accent Gradient -->
-    <linearGradient id="accentBlue" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#2563EB"/>
-      <stop offset="100%" stop-color="#4F46E5"/>
-    </linearGradient>
-
-    <!-- Cut Fill Pattern / Gradient -->
-    <linearGradient id="cutGradLight" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FFE4E6"/>
-      <stop offset="100%" stop-color="#FFF1F2"/>
-    </linearGradient>
-
-    <!-- Drop Shadow for Cards -->
-    <filter id="cardShadow" x="-4%" y="-4%" width="108%" height="112%">
-      <feDropShadow dx="0" dy="4" stdDeviation="12" flood-color="#0F172A" flood-opacity="0.06"/>
-      <feDropShadow dx="0" dy="1" stdDeviation="3" flood-color="#0F172A" flood-opacity="0.04"/>
+    <filter id="shadow" x="-3%" y="-3%" width="106%" height="110%">
+      <feDropShadow dx="0" dy="6" stdDeviation="16" flood-color="#0F172A" flood-opacity="0.04"/>
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#0F172A" flood-opacity="0.02"/>
     </filter>
-
-    <!-- Subtle Dot Grid Pattern -->
-    <pattern id="dotGrid" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
-      <circle cx="2" cy="2" r="1.2" fill="#CBD5E1" opacity="0.45"/>
-    </pattern>
   </defs>
 
-  <!-- Background Canvas -->
-  <rect width="1200" height="440" rx="20" fill="url(#bgGradLight)"/>
-  <rect width="1200" height="440" rx="20" fill="url(#dotGrid)"/>
-  <rect width="1198" height="438" x="1" y="1" rx="19" fill="none" stroke="#E2E8F0" stroke-width="1.5"/>
+  <!-- Canvas Background -->
+  <rect width="1200" height="400" rx="16" fill="url(#bg)"/>
+  <rect width="1198" height="398" x="1" y="1" rx="15" fill="none" stroke="#E2E8F0" stroke-width="1"/>
 
-  <!-- ================= LEFT COLUMN: Typography & Value ================= -->
-  <g transform="translate(60, 48)">
-    <!-- Category Eyebrow Pill -->
-    <g>
-      <rect width="210" height="28" rx="14" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1"/>
-      <circle cx="14" cy="14" r="4" fill="#2563EB"/>
-      <text x="26" y="18" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="11.5" font-weight="700" fill="#1D4ED8" letter-spacing="0.5">AI VIDEO ROUGH-CUT</text>
-    </g>
+  <!-- ================= LEFT COLUMN ================= -->
+  <g transform="translate(68, 56)">
+    <!-- Category Pill -->
+    <text x="0" y="14" font-family="ui-monospace, Menlo, Monaco, monospace" font-size="12" font-weight="700" fill="#4F46E5" letter-spacing="1.2">ROUGH-CUT AUTOMATION</text>
 
     <!-- Title -->
-    <text x="0" y="78" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="44" font-weight="800" fill="#0F172A" letter-spacing="-0.8">video-editor</text>
-    
-    <!-- Subtitle / Value Pitch -->
-    <text x="0" y="112" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="18" font-weight="600" fill="#334155">现成通用视频智能粗剪 · 停顿死寂消除 · 口误废案剔除</text>
-    <text x="0" y="138" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="13.5" font-weight="400" fill="#64748B">无需绑定工程文件 · 支持 MP4 / MOV / MKV · 原生硬件微淡化导出</text>
+    <text x="0" y="68" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif" font-size="46" font-weight="800" fill="#0F172A" letter-spacing="-1">video-editor</text>
 
-    <!-- 4 Value Badges (Light Card Style) -->
-    <g transform="translate(0, 168)">
-      <!-- Badge 1 -->
-      <g>
-        <rect width="236" height="36" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
-        <text x="12" y="23" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="12.5" font-weight="600" fill="#0369A1">🎯 92.3% 跨工程宏观精确度</text>
-      </g>
-      <!-- Badge 2 -->
-      <g transform="translate(246, 0)">
-        <rect width="244" height="36" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
-        <text x="12" y="23" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="12.5" font-weight="600" fill="#047857">🛡️ 字级 ASR 保护 · 严防吞字</text>
-      </g>
+    <!-- Subtitle -->
+    <text x="0" y="106" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'SF Pro Text', sans-serif" font-size="18" font-weight="600" fill="#334155">现成视频智能粗剪 · 消除停顿与口误</text>
+    <text x="0" y="132" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', 'SF Pro Text', sans-serif" font-size="14" font-weight="400" fill="#64748B">结合 Silero VAD 与 Qwen 3.8 Omni，原生硬件微淡化导出</text>
+
+    <!-- Install Command Pill -->
+    <g transform="translate(0, 166)">
+      <rect width="396" height="40" rx="8" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="1"/>
+      <text x="16" y="25" font-family="ui-monospace, Menlo, Monaco, monospace" font-size="13" font-weight="600" fill="#94A3B8">$</text>
+      <text x="32" y="25" font-family="ui-monospace, Menlo, Monaco, monospace" font-size="13" font-weight="500" fill="#0F172A">npx skills add oil-oil/video-editor</text>
     </g>
 
-    <g transform="translate(0, 212)">
-      <!-- Badge 3 -->
+    <!-- 3 Key Metric Stats -->
+    <g transform="translate(0, 248)">
       <g>
-        <rect width="236" height="36" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
-        <text x="12" y="23" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="12.5" font-weight="600" fill="#6D28D9">🧠 Qwen 3.8 Omni 滑窗推理</text>
+        <text x="0" y="0" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif" font-size="28" font-weight="800" fill="#0F172A">-62%</text>
+        <text x="0" y="22" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif" font-size="12" font-weight="500" fill="#64748B">冗余耗时压缩</text>
       </g>
-      <!-- Badge 4 -->
-      <g transform="translate(246, 0)">
-        <rect width="244" height="36" rx="8" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1"/>
-        <text x="12" y="23" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="12.5" font-weight="600" fill="#B45309">🔊 15ms 接缝微淡化 · 零爆音</text>
+      <g transform="translate(126, 0)">
+        <text x="0" y="0" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif" font-size="28" font-weight="800" fill="#0F172A">92.3%</text>
+        <text x="0" y="22" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif" font-size="12" font-weight="500" fill="#64748B">盲测准确率</text>
       </g>
-    </g>
-
-    <!-- Terminal Command Pill (Light Aesthetic) -->
-    <g transform="translate(0, 270)">
-      <rect width="490" height="46" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.2"/>
-      <!-- Window Dots -->
-      <circle cx="18" cy="23" r="4.5" fill="#EF4444"/>
-      <circle cx="32" cy="23" r="4.5" fill="#F59E0B"/>
-      <circle cx="46" cy="23" r="4.5" fill="#10B981"/>
-      <text x="68" y="28" font-family="ui-monospace, 'SFMono-Regular', Menlo, monospace" font-size="14" font-weight="500" fill="#1E293B">npx skills add oil-oil/video-editor</text>
-      <rect x="430" y="10" width="48" height="26" rx="6" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="1"/>
-      <text x="444" y="27" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" fill="#64748B">CLI</text>
+      <g transform="translate(254, 0)">
+        <text x="0" y="0" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif" font-size="28" font-weight="800" fill="#0F172A">15ms</text>
+        <text x="0" y="22" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif" font-size="12" font-weight="500" fill="#64748B">接缝平滑微淡化</text>
+      </g>
     </g>
   </g>
 
-  <!-- ================= RIGHT COLUMN: Sleek Modern Timeline Board ================= -->
-  <g transform="translate(585, 40)" filter="url(#cardShadow)">
-    <!-- White Card Background -->
-    <rect width="555" height="360" rx="16" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5"/>
+  <!-- ================= RIGHT COLUMN: Minimalist Timeline Card ================= -->
+  <g transform="translate(568, 52)" filter="url(#shadow)">
+    <rect width="564" height="296" rx="14" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.2"/>
 
-    <!-- Card Window Title Header -->
-    <g transform="translate(20, 16)">
-      <!-- Mini Traffic Lights -->
-      <circle cx="6" cy="6" r="3.5" fill="#CBD5E1"/>
-      <circle cx="16" cy="6" r="3.5" fill="#CBD5E1"/>
-      <circle cx="26" cy="6" r="3.5" fill="#CBD5E1"/>
-      <text x="40" y="10" font-family="ui-monospace, 'SFMono-Regular', Menlo, monospace" font-size="11" font-weight="700" fill="#475569">AUTOMATED EDITING TIMELINE</text>
-      <rect x="424" y="-3" width="92" height="18" rx="4" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
-      <text x="430" y="10" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10" font-weight="600" fill="#0284C7">⚡️ VideoToolbox</text>
-    </g>
-
-    <!-- Track 1: Raw Audio & Silence VAD -->
-    <g transform="translate(18, 48)">
-      <rect width="519" height="70" rx="8" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
-      <text x="14" y="18" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" fill="#64748B">TRACK 1 · 原始音频波形与 VAD 死寂检测</text>
+    <!-- Track 1: RAW RECORDING -->
+    <g transform="translate(24, 28)">
+      <text x="0" y="12" font-family="ui-monospace, Menlo, Monaco, monospace" font-size="11.5" font-weight="700" fill="#475569" letter-spacing="0.5">RAW RECORDING</text>
       
-      <!-- Speech Waveform Segment 1 (Blue) -->
-      <path d="M 16 45 Q 26 28 36 45 T 56 45 T 76 45 T 96 45 T 116 45 T 136 45 T 156 45" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round"/>
+      <!-- Time Pill -->
+      <g transform="translate(432, -3)">
+        <rect width="84" height="22" rx="5" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="1"/>
+        <text x="12" y="15" font-family="ui-monospace, Menlo, Monaco, monospace" font-size="11.5" font-weight="600" fill="#64748B">53:14</text>
+      </g>
+
+      <!-- Track Bar -->
+      <g transform="translate(0, 24)">
+        <rect width="516" height="60" rx="8" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+
+        <!-- Speech Section 1 Waveform -->
+        <line x1="16.0" y1="26.0" x2="16.0" y2="34.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="21.2" y1="23.0" x2="21.2" y2="37.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="26.4" y1="20.0" x2="26.4" y2="40.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="31.6" y1="22.0" x2="31.6" y2="38.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="36.8" y1="17.0" x2="36.8" y2="43.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="42.0" y1="14.0" x2="42.0" y2="46.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="47.2" y1="19.0" x2="47.2" y2="41.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="52.4" y1="13.0" x2="52.4" y2="47.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="57.6" y1="16.0" x2="57.6" y2="44.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="62.8" y1="21.0" x2="62.8" y2="39.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="68.0" y1="15.0" x2="68.0" y2="45.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="73.2" y1="18.0" x2="73.2" y2="42.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="78.4" y1="22.0" x2="78.4" y2="38.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="83.6" y1="19.0" x2="83.6" y2="41.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="88.8" y1="16.0" x2="88.8" y2="44.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="94.0" y1="13.0" x2="94.0" y2="47.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="99.2" y1="19.0" x2="99.2" y2="41.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="104.4" y1="17.0" x2="104.4" y2="43.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="109.6" y1="21.0" x2="109.6" y2="39.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="114.8" y1="24.0" x2="114.8" y2="36.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="120.0" y1="27.0" x2="120.0" y2="33.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+
+        <!-- Cut Silence 1 -->
+        <g transform="translate(138, 10)">
+          <rect width="72" height="40" rx="6" fill="#FEF2F2" stroke="#FECACA" stroke-width="1" stroke-dasharray="3 3"/>
+          <text x="16" y="24" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif" font-size="11" font-weight="600" fill="#DC2626">✂ 停顿</text>
+        </g>
+
+        <!-- Stumble Take -->
+        <g transform="translate(220, 10)">
+          <rect width="78" height="40" rx="6" fill="#FFFBEB" stroke="#FDE68A" stroke-width="1"/>
+          <text x="14" y="24" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif" font-size="11" font-weight="600" fill="#B45309">✖ 口误废案</text>
+        </g>
+
+        <!-- Cut Silence 2 -->
+        <g transform="translate(308, 10)">
+          <rect width="72" height="40" rx="6" fill="#FEF2F2" stroke="#FECACA" stroke-width="1" stroke-dasharray="3 3"/>
+          <text x="16" y="24" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif" font-size="11" font-weight="600" fill="#DC2626">✂ 停顿</text>
+        </g>
+
+        <!-- Speech Section 2 (Retake) Waveform -->
+        <line x1="392.0" y1="26.0" x2="392.0" y2="34.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="397.2" y1="22.0" x2="397.2" y2="38.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="402.4" y1="17.0" x2="402.4" y2="43.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="407.6" y1="14.0" x2="407.6" y2="46.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="412.8" y1="19.0" x2="412.8" y2="41.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="418.0" y1="12.0" x2="418.0" y2="48.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="423.2" y1="16.0" x2="423.2" y2="44.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="428.4" y1="21.0" x2="428.4" y2="39.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="433.6" y1="15.0" x2="433.6" y2="45.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="438.8" y1="18.0" x2="438.8" y2="42.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="444.0" y1="22.0" x2="444.0" y2="38.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="449.2" y1="19.0" x2="449.2" y2="41.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="454.4" y1="16.0" x2="454.4" y2="44.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="459.6" y1="21.0" x2="459.6" y2="39.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="464.8" y1="26.0" x2="464.8" y2="34.0" stroke="#2563EB" stroke-width="2.4" stroke-linecap="round"/>
+      </g>
+    </g>
+
+    <!-- Downward Arrow Flow -->
+    <g transform="translate(272, 130)">
+      <path d="M 10 0 L 10 14 M 6 10 L 10 14 L 14 10" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+
+    <!-- Track 2: CLEAN EXPORT -->
+    <g transform="translate(24, 156)">
+      <text x="0" y="12" font-family="ui-monospace, Menlo, Monaco, monospace" font-size="11.5" font-weight="700" fill="#047857" letter-spacing="0.5">CLEAN EXPORT</text>
       
-      <!-- Silence Cutout 1 (Red Strikethrough Box) -->
-      <rect x="166" y="26" width="94" height="36" rx="6" fill="url(#cutGradLight)" stroke="#F87171" stroke-width="1.2" stroke-dasharray="3 3"/>
-      <text x="180" y="49" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" fill="#DC2626">✂ 停顿死等</text>
+      <!-- Time pill -->
+      <g transform="translate(406, -3)">
+        <rect width="110" height="22" rx="5" fill="#ECFDF5" stroke="#A7F3D0" stroke-width="1"/>
+        <text x="10" y="15" font-family="ui-monospace, Menlo, Monaco, monospace" font-size="11.5" font-weight="700" fill="#059669">20:18 (-62%)</text>
+      </g>
 
-      <!-- Speech Waveform Segment 2 (Stumble in Red-Orange) -->
-      <path d="M 270 45 Q 280 32 290 45 T 310 45 T 330 45 T 350 45 T 366 45" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round"/>
+      <!-- Track Bar (Compacted!) -->
+      <g transform="translate(0, 24)">
+        <rect width="516" height="60" rx="8" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
 
-      <!-- Silence Cutout 2 -->
-      <rect x="376" y="26" width="46" height="36" rx="6" fill="url(#cutGradLight)" stroke="#F87171" stroke-width="1.2" stroke-dasharray="3 3"/>
+        <!-- Active Compacted Stream 1 -->
+        <line x1="16.0" y1="26.0" x2="16.0" y2="34.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="21.2" y1="23.0" x2="21.2" y2="37.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="26.4" y1="20.0" x2="26.4" y2="40.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="31.6" y1="22.0" x2="31.6" y2="38.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="36.8" y1="17.0" x2="36.8" y2="43.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="42.0" y1="14.0" x2="42.0" y2="46.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="47.2" y1="19.0" x2="47.2" y2="41.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="52.4" y1="13.0" x2="52.4" y2="47.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="57.6" y1="16.0" x2="57.6" y2="44.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="62.8" y1="21.0" x2="62.8" y2="39.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="68.0" y1="15.0" x2="68.0" y2="45.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="73.2" y1="18.0" x2="73.2" y2="42.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="78.4" y1="22.0" x2="78.4" y2="38.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="83.6" y1="19.0" x2="83.6" y2="41.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="88.8" y1="16.0" x2="88.8" y2="44.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="94.0" y1="13.0" x2="94.0" y2="47.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="99.2" y1="19.0" x2="99.2" y2="41.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="104.4" y1="17.0" x2="104.4" y2="43.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="109.6" y1="21.0" x2="109.6" y2="39.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="114.8" y1="24.0" x2="114.8" y2="36.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="120.0" y1="27.0" x2="120.0" y2="33.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
 
-      <!-- Speech Waveform Segment 3 (Clean Speech in Emerald) -->
-      <path d="M 432 45 Q 442 26 452 45 T 472 45 T 492 45 T 505 45" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
+        <!-- Crossfade Joint Indicator -->
+        <g transform="translate(136, 18)">
+          <rect width="24" height="24" rx="12" fill="#10B981"/>
+          <text x="5" y="16" font-family="sans-serif" font-size="11" font-weight="bold" fill="#FFFFFF">⇄</text>
+        </g>
+
+        <!-- Active Compacted Stream 2 -->
+        <line x1="170.0" y1="26.0" x2="170.0" y2="34.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="175.2" y1="22.0" x2="175.2" y2="38.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="180.4" y1="17.0" x2="180.4" y2="43.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="185.6" y1="14.0" x2="185.6" y2="46.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="190.8" y1="19.0" x2="190.8" y2="41.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="196.0" y1="12.0" x2="196.0" y2="48.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="201.2" y1="16.0" x2="201.2" y2="44.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="206.4" y1="21.0" x2="206.4" y2="39.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="211.6" y1="15.0" x2="211.6" y2="45.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="216.8" y1="18.0" x2="216.8" y2="42.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="222.0" y1="22.0" x2="222.0" y2="38.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="227.2" y1="19.0" x2="227.2" y2="41.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="232.4" y1="16.0" x2="232.4" y2="44.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="237.6" y1="21.0" x2="237.6" y2="39.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+        <line x1="242.8" y1="26.0" x2="242.8" y2="34.0" stroke="#059669" stroke-width="2.4" stroke-linecap="round"/>
+
+        <!-- Compact Empty Space Indicator -->
+        <g transform="translate(262, 18)">
+          <line x1="0" y1="12" x2="236" y2="12" stroke="#E2E8F0" stroke-width="1.5" stroke-dasharray="4 4"/>
+          <text x="32" y="16" font-family="ui-monospace, Menlo, Monaco, monospace" font-size="11" font-weight="600" fill="#94A3B8">33 min trimmed &amp; joined</text>
+        </g>
+      </g>
     </g>
 
-    <!-- Track 2: Word Protection & LLM Semantic Planning -->
-    <g transform="translate(18, 128)">
-      <rect width="519" height="74" rx="8" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
-      <text x="14" y="18" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" fill="#64748B">TRACK 2 · 字级保护垫 (60ms) 与 Qwen 口误识别</text>
+    <!-- Legend -->
+    <g transform="translate(24, 260)">
+      <circle cx="4" cy="4" r="3.5" fill="#2563EB"/>
+      <text x="14" y="7.5" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif" font-size="11" fill="#64748B">有效原声</text>
 
-      <!-- Protected Words (Green Cards) -->
-      <g transform="translate(14, 28)">
-        <rect width="72" height="34" rx="6" fill="#F0FDF4" stroke="#86EFAC" stroke-width="1"/>
-        <text x="12" y="22" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11.5" font-weight="600" fill="#166534">有效讲解</text>
-
-        <rect x="78" width="68" height="34" rx="6" fill="#F0FDF4" stroke="#86EFAC" stroke-width="1"/>
-        <text x="90" y="22" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11.5" font-weight="600" fill="#166534">内容保护</text>
+      <g transform="translate(94, 0)">
+        <circle cx="4" cy="4" r="3.5" fill="#DC2626"/>
+        <text x="14" y="7.5" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif" font-size="11" fill="#64748B">切除停顿</text>
       </g>
 
-      <!-- Discarded Stumble/Take (Red Cross Box) -->
-      <g transform="translate(262, 28)">
-        <rect width="138" height="34" rx="6" fill="#FEF2F2" stroke="#FCA5A5" stroke-width="1.2"/>
-        <text x="14" y="22" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11.5" font-weight="700" fill="#B91C1C">✖ 口误推倒重讲</text>
+      <g transform="translate(182, 0)">
+        <circle cx="4" cy="4" r="3.5" fill="#D97706"/>
+        <text x="14" y="7.5" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif" font-size="11" fill="#64748B">剔除口误</text>
       </g>
 
-      <!-- Final Clean Retake Word -->
-      <g transform="translate(426, 28)">
-        <rect width="78" height="34" rx="6" fill="#F0FDF4" stroke="#86EFAC" stroke-width="1"/>
-        <text x="10" y="22" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11.5" font-weight="600" fill="#166534">定版重录句</text>
+      <g transform="translate(270, 0)">
+        <circle cx="4" cy="4" r="3.5" fill="#059669"/>
+        <text x="14" y="7.5" font-family="-apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif" font-size="11" fill="#64748B">平滑成片</text>
       </g>
-    </g>
-
-    <!-- Track 3: Final Reconstructed Slices with Crossfade -->
-    <g transform="translate(18, 212)">
-      <rect width="519" height="68" rx="8" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
-      <text x="14" y="18" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" fill="#64748B">TRACK 3 · 硬件微淡化无缝重组 (Crossfade 15ms)</text>
-
-      <!-- Slice 1 -->
-      <g transform="translate(14, 27)">
-        <rect width="215" height="30" rx="6" fill="#EFF6FF" stroke="#93C5FD" stroke-width="1.2"/>
-        <text x="18" y="20" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12" font-weight="600" fill="#1E40AF">Slice 1 · 紧凑原声</text>
-      </g>
-
-      <!-- Crossfade Connector -->
-      <g transform="translate(222, 27)">
-        <circle cx="12" cy="15" r="9" fill="#2563EB"/>
-        <text x="7" y="19" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="bold" fill="#FFFFFF">⇄</text>
-      </g>
-
-      <!-- Slice 2 -->
-      <g transform="translate(240, 27)">
-        <rect width="265" height="30" rx="6" fill="#F0FDF4" stroke="#86EFAC" stroke-width="1.2"/>
-        <text x="18" y="20" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="12" font-weight="600" fill="#166534">Slice 2 · 订正重讲 (无缝衔接)</text>
-      </g>
-    </g>
-
-    <!-- Bottom Result Bar -->
-    <g transform="translate(18, 290)">
-      <rect width="519" height="50" rx="10" fill="#F1F5F9" stroke="#E2E8F0" stroke-width="1"/>
-      <text x="16" y="30" font-family="ui-monospace, 'SFMono-Regular', Menlo, monospace" font-size="12" font-weight="700" fill="#475569">PROVEN RESULT:</text>
-      <text x="138" y="30" font-family="ui-monospace, 'SFMono-Regular', Menlo, monospace" font-size="12.5" font-weight="800" fill="#2563EB">53m 原片 → 20m 紧凑成片 (省时 62%)</text>
-      <circle cx="496" cy="25" r="4.5" fill="#10B981"/>
     </g>
   </g>
 </svg>
