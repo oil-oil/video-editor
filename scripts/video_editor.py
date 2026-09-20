@@ -50,6 +50,7 @@ from video_assembler import (
 
 CONFIG_PATH = Path.home() / ".config" / "video-editor" / "config.json"
 DEFAULT_CONFIG = {
+    "asr_backend": "bailian",
     "semantic_planner": "calling-agent",
     "semantic_max_local_cleanup_ms": 2500.0,
     "pause_threshold_ms": 300.0,
@@ -160,6 +161,8 @@ def run_pipeline(
     if not video_path.is_file():
         raise FileNotFoundError(f"找不到源视频：{video_path}")
     cfg = get_config()
+    if str(cfg.get("asr_backend", "bailian")).strip().lower() != "bailian":
+        raise ValueError("video-editor 的 ASR 后端固定为 bailian；本地 ASR 不属于这个 Skill 的默认流程")
     if pause_threshold_ms is not None:
         cfg["pause_threshold_ms"] = pause_threshold_ms
     for key in ("pause_threshold_ms", "sentence_threshold_ms", "min_pause_ms", "crossfade_ms"):

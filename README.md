@@ -50,7 +50,7 @@ npx skills add oil-oil/video-editor
 
 ### 3. API Key 配置
 
-只有 ASR 使用阿里云百炼 DashScope API：优先通过 bl CLI 调用 fun-asr，未安装 bl 时使用 SDK 的 paraformer-realtime-v2。语义判断由调用 Skill 的 Agent 根据本地带时间戳转录完成，不调用外部模型。离线 review/render 不需要 Key。
+ASR 固定使用阿里云百炼 DashScope API：优先通过 bl CLI 调用 fun-asr，未安装 bl 时使用 SDK 的 paraformer-realtime-v2。语义判断由调用 Skill 的 Agent 根据本地带时间戳转录完成，不调用外部模型。这个 Skill 不安装或调用本地 Whisper；离线 review/render 不需要 Key。
 
 **使用随附安全配置页：**
 需要 Node.js 22.18+；以下命令在 Skill 目录执行。

@@ -24,7 +24,7 @@ description: "粗剪现成 MP4、MOV、MKV 视频：压缩停顿、识别口误�
 
 ## 外部服务与语义判断边界
 
-只有语音转文字需要 DashScope API Key，先读[API Key 配置与业务读取](references/api-key-setup.md)。语义判断不调用外部模型或模型接口；Agent 读取本地转录上下文后，自己写出语义删减计划。已有安全配置直接复用，缺少时由用户亲自填写固定页面，不在聊天或命令参数中传 Key。
+只有语音转文字需要 DashScope API Key，先读[API Key 配置与业务读取](references/api-key-setup.md)。本 Skill 的 ASR 后端固定为百炼 `bailian`；语义判断不调用外部模型或模型接口，Agent 读取本地转录上下文后，自己写出语义删减计划。已有安全配置直接复用，缺少时由用户亲自填写固定页面，不在聊天或命令参数中传 Key。
 
 ---
 
@@ -43,6 +43,7 @@ description: "粗剪现成 MP4、MOV、MKV 视频：压缩停顿、识别口误�
 
 ```json
 {
+  "asr_backend": "bailian",
   "semantic_planner": "calling-agent",
   "semantic_max_local_cleanup_ms": 2500.0,
   "pause_threshold_ms": 300.0,
@@ -53,6 +54,7 @@ description: "粗剪现成 MP4、MOV、MKV 视频：压缩停顿、识别口误�
 ```
 
 - `semantic_planner` 固定为 `calling-agent`，表示语义判断由当前调用 Skill 的 Agent 完成，不读取模型地址、不保存模型 Key。
+- `asr_backend` 固定为 `bailian`，视频 Skill 不安装或调用本地 Whisper；需要本地 ASR 时使用 `screen-studio-editor` 的显式 `local` 模式。
 - `semantic_max_local_cleanup_ms` 是局部口误的安全上限，超过 2.5 秒的 `delivery_cleanup` 或 `self_correction` 默认拒绝。
 - `scripts/run.sh` 和 `scripts/run.ps1` 按当前平台选择虚拟环境入口：只为 ASR 复用环境变量或已有 bl 配置，缺少时通过凭据组件从系统库注入。普通配置 JSON 不保存 Key。
 

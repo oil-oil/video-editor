@@ -178,6 +178,16 @@ class PipelineSafetyTests(unittest.TestCase):
         self.assertNotIn('model', loaded)
         self.assertNotIn('api_base', loaded)
         self.assertEqual(loaded['semantic_planner'], 'calling-agent')
+        self.assertEqual(loaded['asr_backend'], 'bailian')
+
+    def test_local_asr_config_is_rejected_in_video_editor(self):
+        config = Path(self.tmp.name) / 'config.json'
+        write_json(config, {'asr_backend': 'local'})
+        with patch.object(editor, 'CONFIG_PATH', config), patch.object(
+            editor, 'get_config', return_value={**editor.DEFAULT_CONFIG, 'asr_backend': 'local'}
+        ):
+            with self.assertRaisesRegex(ValueError, '固定为 bailian'):
+                editor.run_pipeline(self.video, dry_run=True)
 
     def test_cache_reuses_same_source_but_invalidates_replacement(self):
         editor.run_pipeline(self.video, dry_run=True)
