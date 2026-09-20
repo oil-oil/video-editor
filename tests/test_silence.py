@@ -76,6 +76,16 @@ class SilenceDetectorTests(unittest.TestCase):
             [],
         )
 
+    def test_audio_silence_overlap_with_asr_word_does_not_veto_cut(self):
+        pauses = detect_adaptive_pauses(
+            [(1.0, 1.4)],
+            [{"word": "轻声", "start": 1.1, "end": 1.2}],
+            threshold_ms=300.0,
+            sentence_threshold_ms=300.0,
+            min_pause_ms=180.0,
+        )
+        self.assertEqual(len(pauses), 1)
+
 
 if __name__ == "__main__":
     unittest.main()

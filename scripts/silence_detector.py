@@ -183,7 +183,7 @@ def detect_adaptive_pauses(
     sentence_threshold_ms: float = 300.0,
     min_pause_ms: float = 180.0,
 ) -> list[dict[str, Any]]:
-    """Build pause cuts with punctuation-aware thresholds and word protection."""
+    """Build pause cuts from measured silence; ASR overlap does not veto audio evidence."""
     min_cut_ms = max(120.0, min(200.0, threshold_ms - min_pause_ms))
     pauses = []
 
@@ -223,4 +223,4 @@ def detect_adaptive_pauses(
             "is_sentence_boundary": is_sentence,
         })
 
-    return protect_words_from_cuts(pauses, words, pad_ms=60.0, min_cut_ms=min_cut_ms)
+    return pauses
