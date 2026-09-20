@@ -109,6 +109,7 @@ def transcribe_audio_bailian(
             "--url", str(audio_path.resolve()),
             "--out", str(raw_json_path.resolve()),
             "--language", language,
+            "--timeout", "600",
             "--quiet",
         ]
         result = subprocess.run(cmd, capture_output=True, text=True)
