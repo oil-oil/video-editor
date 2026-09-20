@@ -38,7 +38,7 @@ npx skills add oil-oil/video-editor
 ### 2. 环境与依赖
 
 - 系统环境：macOS、Windows 或 Linux。macOS 使用 VideoToolbox；Windows 和 Linux 默认使用 `libx264` 软件编码。
-- 软件依赖：Python 3.10+、`ffmpeg`、`ffprobe`；macOS 已实机验证，Windows 由 GitHub Actions 的 `windows-latest` 持续验证，Linux 编码分支仍需单独验收。
+- 软件依赖：Python 3.10+、`ffmpeg`、`ffprobe`；macOS 已实机验证，Windows 由 GitHub Actions 的 `windows-latest` 持续验证，Linux 编码分支仍需单独验收。Windows 上如果 FFmpeg 版本不再提供 `filter_complex_script`，程序会自动改用内联滤镜图重试。
 - 首次使用安装 Python 虚拟环境与依赖。macOS / Linux：
   ```bash
   bash setup.sh
@@ -89,7 +89,7 @@ bash scripts/run.sh cut /path/to/video.mp4 \
   -o /path/to/video_edited.mp4
 ```
 
-- macOS 默认使用 `h264_videotoolbox`；Windows 和 Linux 自动回退到 `libx264`。
+- macOS 默认使用 `h264_videotoolbox`；Windows 和 Linux 自动回退到 `libx264`。部分 Windows FFmpeg 版本不再提供 `filter_complex_script`，程序会自动把同一张滤镜图改为内联参数重试。
 - 自动提取音频校准底噪、FunAudio ASR 字级转录、自适应停顿切除、Agent 语义判断、波形极值吸附与 15ms 微淡化组装。
 - 两套剪辑 Skill 统一使用同一套停顿规则：连续无声超过 **300ms** 才进入剪辑候选，剪后保留约 **180ms** 气口；底层 250ms 探测窗口只负责发现候选，不会直接触发剪辑。ASR 时间戳和无声区重叠时只做复核提示，不自动阻止音频剪辑。
 - 收尾检查区分两类证据：语义删减必须避开保留词和替代话术；已经由音频确认的停顿允许覆盖不精确的 ASR 时间戳，避免检测阶段放行、最后又被旧式全局字保护拦回。

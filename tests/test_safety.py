@@ -104,7 +104,8 @@ process.exit(result.status ?? 1);
               'print(load_api_key() == "test-only-credential")')
         result = subprocess.run(['node', '--input-type=module', '-e', js, profile.as_uri(),
                                  sys.executable, '-c', py, str(Path(editor.__file__).parent)],
-                                check=True, capture_output=True, text=True)
+                                check=True, capture_output=True, text=True,
+                                encoding="utf-8", errors="replace")
         self.assertEqual(result.stdout.strip(), 'True')
         self.assertNotIn('test-only-credential', result.stdout + result.stderr)
 
@@ -195,7 +196,7 @@ class PipelineSafetyTests(unittest.TestCase):
         (work / 'semantic_plan.json').unlink()
         result = editor.run_pipeline(self.video, dry_run=True)
         self.assertTrue(result['needs_agent_plan'])
-        context = json.loads(Path(result['semantic_context']).read_text())
+        context = json.loads(Path(result['semantic_context']).read_text(encoding='utf-8'))
         self.assertEqual(context['source'], source_signature(self.video))
         self.assertIn('windows', context)
 
@@ -218,7 +219,7 @@ class PipelineSafetyTests(unittest.TestCase):
 
     def test_manual_plan_rejects_invalid_intervals(self):
         result = editor.run_pipeline(self.video, dry_run=True)
-        plan = json.loads(Path(result['plan_json']).read_text())
+        plan = json.loads(Path(result['plan_json']).read_text(encoding='utf-8'))
         for kept in ([], [[0, float('nan')]], [[0, 9000]], [[2000, 4000], [3000, 5000]]):
             with self.subTest(kept=kept), self.assertRaises(ValueError):
                 editor.validate_plan({**plan, 'kept_intervals': kept}, self.video)
@@ -258,7 +259,7 @@ class PipelineSafetyTests(unittest.TestCase):
 
     def test_dry_report_does_not_claim_export(self):
         result = editor.run_pipeline(self.video, dry_run=True)
-        report = Path(result['report_md']).read_text()
+        report = Path(result['report_md']).read_text(encoding='utf-8')
         self.assertIn('尚未成功导出', report)
         self.assertNotIn('音频微淡化已应用', report)
 
@@ -312,7 +313,7 @@ class ExportSafetyTests(unittest.TestCase):
                     'config': {'crossfade_ms': 15}, 'pause_cuts': [], 'semantic_cuts': []}
             actual = editor.export_plan(plan, self.video, out, report, fast_copy=copy)
             self.assertAlmostEqual(actual, probe_video_info(out)['duration_s'])
-            text = report.read_text()
+            text = report.read_text(encoding='utf-8')
             self.assertIn(f'{actual:.3f}s', text)
             if copy:
                 self.assertIn('近似流拷贝', text)
@@ -335,7 +336,8 @@ class ExportSafetyTests(unittest.TestCase):
             args = [sys.executable, str(entry), command, str(self.video)]
             if command == 'render':
                 args += ['-o', str(self.root / 'offline.mp4')]
-            completed = subprocess.run(args, env=env, capture_output=True, text=True, check=True)
+            completed = subprocess.run(args, env=env, capture_output=True, text=True,
+                                       encoding='utf-8', errors='replace', check=True)
             result = json.loads(completed.stdout)
             self.assertEqual(result['new_duration_s'], 2)
             if command == 'render':

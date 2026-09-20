@@ -50,7 +50,7 @@ def detect_silence_regions(
         "-f", "null",
         "-",
     ]
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
     regions: list[tuple[float, float]] = []
     current_start: float | None = None
     for line in result.stderr.splitlines():

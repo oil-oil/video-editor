@@ -86,7 +86,7 @@ bash scripts/run.sh cut /path/to/video.mp4 --semantic-plan /path/to/.video.mp4_w
 3. **自适应停顿检测与证据标注**：结合 Silero VAD 与句尾标点感知切分死寂停顿；ASR 负责时间对齐和复核提示，不会否决已经由音频确认的无声区。
 4. **Agent 语义口误规划**：按子句标点切分为原子片段，生成带时间戳的本地上下文；由当前 Agent 阅读上下文，依据“宁可漏删，不要误删”的规则写出 `semantic_plan.json`，程序只负责校验编号、原话覆盖、替代冲突和安全时长。
 5. **切点波形极小值吸附**：只在删除区间内微调，随后重新检查保留文字。
-6. **平台编码与微淡化**：macOS 采用 `h264_videotoolbox`，Windows / Linux 使用 `libx264`，每段保留切片首尾施加 15ms `afade`。
+6. **平台编码与微淡化**：macOS 采用 `h264_videotoolbox`，Windows / Linux 使用 `libx264`，每段保留切片首尾施加 15ms `afade`。部分 Windows FFmpeg 版本不再提供 `filter_complex_script`，程序会自动改用内联滤镜图重试。
 7. **生成 Markdown 审计报告**：记录实际配置，分别标明计划时长、导出状态和实测时长。
 
 ### Agent 写 `semantic_plan.json` 的规则
@@ -175,5 +175,5 @@ bash scripts/run.sh render /path/to/video.mp4 -o /path/to/video_edited.mp4
 - `scripts/transcriber.py`: 阿里百炼 ASR 转录模块（支持 `bl` CLI 与 SDK）。
 - `scripts/silence_detector.py`: 自适应静音检测、VAD 与字保护算法。
 - `scripts/semantic_planner.py`: 子句原子化切分、Agent 提示构造和语义计划校验；不发起任何模型请求。
-- `scripts/video_assembler.py`: VideoToolbox 硬件切片组装、15ms 音频微淡化与报告生成。
+- `scripts/video_assembler.py`: 平台编码、Windows FFmpeg 滤镜参数兼容、15ms 音频微淡化与报告生成。
 - `tests/`: 基础算法与业务回归测试。维护时运行 `.venv/bin/python3 -m unittest discover -s tests -v`，覆盖源片保护、缓存失效、ASR 格式、缺少 Agent 计划、替代冲突和实际渲染；不得以基础函数测试通过代替完整流程验证。

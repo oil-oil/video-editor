@@ -21,7 +21,9 @@ def probe_video_info(video_path: Path) -> dict[str, float | str]:
         "-of", "json",
         str(video_path),
     ]
-    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+    result = subprocess.run(
+        cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", check=True
+    )
     import json
     data = json.loads(result.stdout)
     duration_s = float((data.get("format") or {}).get("duration", 0.0))
@@ -79,7 +81,7 @@ def extract_audio_wav(video_path: Path, output_wav: Path) -> Path:
 def measure_audio_levels(audio_path: Path) -> tuple[float | None, float | None]:
     """Return (mean_dbfs, max_dbfs) from ffmpeg volumedetect."""
     cmd = ["ffmpeg", "-i", str(audio_path), "-af", "volumedetect", "-f", "null", "-"]
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace")
     mean_db = max_db = None
     for line in result.stderr.splitlines():
         if "mean_volume:" in line:

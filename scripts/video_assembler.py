@@ -140,7 +140,41 @@ def assemble_video_encode(
             str(output_video),
         ]
         log(f"Assembling {n_slices} slice(s) with {encoder} and {crossfade_ms}ms micro-fades...")
-        result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        result = subprocess.run(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+        # FFmpeg 9 on Windows removed the long-standing script-file option.
+        # Keep the file-based path first (it avoids command-line length limits
+        # on versions that support it), then fall back to the inline graph.
+        if result.returncode != 0 and "filter_complex_script" in result.stderr:
+            log("当前 FFmpeg 不支持 filter_complex_script，改用内联滤镜图重试。")
+            inline_cmd = [
+                "ffmpeg",
+                "-y",
+                "-i", str(input_video),
+                "-filter_complex", filter_complex,
+                "-map", "[outv]",
+                "-map", "[outa]",
+                "-c:v", encoder,
+                *enc_opts,
+                "-c:a", "aac",
+                "-b:a", "192k",
+                "-movflags", "+faststart",
+                str(output_video),
+            ]
+            result = subprocess.run(
+                inline_cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+            )
         if result.returncode != 0:
             raise RuntimeError(f"ffmpeg assembly failed:\n{result.stderr[-2000:]}")
     finally:
@@ -197,7 +231,15 @@ def assemble_video_stream_copy(
             "-movflags", "+faststart",
             str(output_video),
         ]
-        subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
+        subprocess.run(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            check=True,
+        )
     finally:
         shutil.rmtree(temp_dir, ignore_errors=True)
 
