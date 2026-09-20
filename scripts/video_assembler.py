@@ -149,15 +149,16 @@ def assemble_video_encode(
             errors="replace",
         )
         # FFmpeg 9 on Windows removed the long-standing script-file option.
-        # Keep the file-based path first (it avoids command-line length limits
-        # on versions that support it), then fall back to the inline graph.
+        # Its replacement reads an option value from a file. Keep that path
+        # before the inline graph so long videos do not hit Windows command
+        # line length limits.
         if result.returncode != 0 and "filter_complex_script" in result.stderr:
-            log("当前 FFmpeg 不支持 filter_complex_script，改用内联滤镜图重试。")
-            inline_cmd = [
+            log("当前 FFmpeg 不支持 filter_complex_script，改用文件参数读取滤镜图重试。")
+            file_value_cmd = [
                 "ffmpeg",
                 "-y",
                 "-i", str(input_video),
-                "-filter_complex", filter_complex,
+                "-/filter_complex", str(filter_file),
                 "-map", "[outv]",
                 "-map", "[outa]",
                 "-c:v", encoder,
@@ -168,13 +169,37 @@ def assemble_video_encode(
                 str(output_video),
             ]
             result = subprocess.run(
-                inline_cmd,
+                file_value_cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
                 encoding="utf-8",
                 errors="replace",
             )
+            if result.returncode != 0:
+                log("当前 FFmpeg 不支持文件参数读取，改用内联滤镜图重试。")
+                inline_cmd = [
+                    "ffmpeg",
+                    "-y",
+                    "-i", str(input_video),
+                    "-filter_complex", filter_complex,
+                    "-map", "[outv]",
+                    "-map", "[outa]",
+                    "-c:v", encoder,
+                    *enc_opts,
+                    "-c:a", "aac",
+                    "-b:a", "192k",
+                    "-movflags", "+faststart",
+                    str(output_video),
+                ]
+                result = subprocess.run(
+                    inline_cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                )
         if result.returncode != 0:
             raise RuntimeError(f"ffmpeg assembly failed:\n{result.stderr[-2000:]}")
     finally:
