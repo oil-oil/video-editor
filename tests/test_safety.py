@@ -75,6 +75,12 @@ class PlanningSafetyTests(unittest.TestCase):
             self.assertLessEqual(cut['end_ms'], 2000)
             self.assertLess(cut['start_ms'], cut['end_ms'])
 
+    def test_windows_uses_software_encoder_fallback(self):
+        with patch.object(assembler.platform, 'system', return_value='Windows'):
+            encoder, options = assembler.detect_video_encoder()
+        self.assertEqual(encoder, 'libx264')
+        self.assertIn('-crf', options)
+
 
 class TranscriptSafetyTests(unittest.TestCase):
     @unittest.skipUnless(shutil.which('node'), '需要 Node.js')

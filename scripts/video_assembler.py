@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Video assembly and slicing engine using ffmpeg with hardware acceleration and audio micro-fading."""
+"""Video assembly and slicing engine using ffmpeg with platform-aware encoding and audio micro-fading."""
 
 from __future__ import annotations
 
@@ -77,7 +77,7 @@ def assemble_video_encode(
     *,
     crossfade_ms: float = 15.0,
 ) -> Path:
-    """Frame-accurate video assembly with VideoToolbox hardware encoding and audio micro-fades."""
+    """Frame-accurate video assembly with platform-aware encoding and audio micro-fades."""
     if not kept_intervals:
         raise RuntimeError("No kept intervals specified — cannot assemble empty video.")
 
@@ -182,7 +182,10 @@ def assemble_video_stream_copy(
 
         with open(concat_txt, "w") as f:
             for s in slice_files:
-                f.write(f"file '{s.resolve()}'\n")
+                # FFmpeg's concat demuxer treats backslashes as escapes. Use
+                # forward slashes so absolute Windows paths (C:/...) work too.
+                concat_path = s.resolve().as_posix().replace("'", "'\\''")
+                f.write(f"file '{concat_path}'\n")
 
         cmd = [
             "ffmpeg",

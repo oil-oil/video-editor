@@ -32,10 +32,10 @@ description: "粗剪现成 MP4、MOV、MKV 视频：压缩停顿、识别口误�
 
 ### 1. 基础依赖
 
-- `ffmpeg`、`ffprobe`：已安装在系统 PATH 或 `/opt/homebrew/bin/`。
+- `ffmpeg`、`ffprobe`：安装后放入系统 PATH；macOS 也支持 `/opt/homebrew/bin/`。
 - DashScope API Key（仅用于 ASR）。优先使用 `bl` CLI 的 `fun-asr`，未安装 bl 时使用 SDK 的 `paraformer-realtime-v2`。
-- Python 3.10+；首次运行 `bash setup.sh` 创建 `.venv` 并安装依赖。钥匙串配置与读取另需 Node.js 22.18+，详见凭据说明。
-- 以下命令在 Skill 目录执行；其他目录使用 `bash <SKILL_DIR>/scripts/run.sh ...`。
+- Python 3.10+；macOS / Linux 首次运行 `bash setup.sh`，Windows 首次运行 `PowerShell -ExecutionPolicy Bypass -File .\setup.ps1`，两者都会创建虚拟环境并安装依赖。钥匙串配置与读取另需 Node.js 22.18+，详见凭据说明。
+- macOS / Linux 使用 `bash <SKILL_DIR>/scripts/run.sh ...`；Windows PowerShell 使用 `<SKILL_DIR>\scripts\run.ps1 ...`。
 
 ### 2. Agent 语义判断配置
 
@@ -54,7 +54,7 @@ description: "粗剪现成 MP4、MOV、MKV 视频：压缩停顿、识别口误�
 
 - `semantic_planner` 固定为 `calling-agent`，表示语义判断由当前调用 Skill 的 Agent 完成，不读取模型地址、不保存模型 Key。
 - `semantic_max_local_cleanup_ms` 是局部口误的安全上限，超过 2.5 秒的 `delivery_cleanup` 或 `self_correction` 默认拒绝。
-- `scripts/run.sh` 统一使用 `.venv`：只为 ASR 复用环境变量或已有 bl 配置，缺少时通过凭据组件从系统库注入。普通配置 JSON 不保存 Key。
+- `scripts/run.sh` 和 `scripts/run.ps1` 按当前平台选择虚拟环境入口：只为 ASR 复用环境变量或已有 bl 配置，缺少时通过凭据组件从系统库注入。普通配置 JSON 不保存 Key。
 
 ---
 
@@ -66,6 +66,12 @@ description: "粗剪现成 MP4、MOV、MKV 视频：压缩停顿、识别口误�
 
 ```bash
 bash scripts/run.sh cut /path/to/video.mp4
+```
+
+Windows PowerShell：
+
+```powershell
+.\scripts\run.ps1 cut C:\path\to\video.mp4
 ```
 
 第一次运行会完成 ASR、VAD 和停顿分析，并生成 `semantic_context.json`。调用 Skill 的 Agent 读取这个文件，按其中的 JSON 规则判断口误，写出同目录的 `semantic_plan.json`，然后继续运行：
@@ -80,7 +86,7 @@ bash scripts/run.sh cut /path/to/video.mp4 --semantic-plan /path/to/.video.mp4_w
 3. **自适应停顿检测与证据标注**：结合 Silero VAD 与句尾标点感知切分死寂停顿；ASR 负责时间对齐和复核提示，不会否决已经由音频确认的无声区。
 4. **Agent 语义口误规划**：按子句标点切分为原子片段，生成带时间戳的本地上下文；由当前 Agent 阅读上下文，依据“宁可漏删，不要误删”的规则写出 `semantic_plan.json`，程序只负责校验编号、原话覆盖、替代冲突和安全时长。
 5. **切点波形极小值吸附**：只在删除区间内微调，随后重新检查保留文字。
-6. **硬件加速拼接与微淡化**：采用 `h264_videotoolbox` 快速重编码，每段保留切片首尾施加 15ms `afade`。
+6. **平台编码与微淡化**：macOS 采用 `h264_videotoolbox`，Windows / Linux 使用 `libx264`，每段保留切片首尾施加 15ms `afade`。
 7. **生成 Markdown 审计报告**：记录实际配置，分别标明计划时长、导出状态和实测时长。
 
 ### Agent 写 `semantic_plan.json` 的规则
@@ -163,7 +169,7 @@ bash scripts/run.sh render /path/to/video.mp4 -o /path/to/video_edited.mp4
 ## 资源导航
 
 - `references/api-key-setup.md`: API Key 安全配置、环境绑定与凭据读取规范。
-- `scripts/run.sh`: 统一环境与凭据入口。
+- `scripts/run.sh` / `scripts/run.ps1`: 按平台选择虚拟环境与凭据入口。
 - `scripts/video_editor.py`: 分析、离线复核与按计划渲染。
 - `scripts/audio_extractor.py`: 音频提取与声学能量分析。
 - `scripts/transcriber.py`: 阿里百炼 ASR 转录模块（支持 `bl` CLI 与 SDK）。

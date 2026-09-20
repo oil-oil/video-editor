@@ -37,11 +37,15 @@ npx skills add oil-oil/video-editor
 
 ### 2. 环境与依赖
 
-- 系统环境：macOS（原生支持 VideoToolbox 硬件加速）或 Linux
-- 软件依赖：Python 3.10+、`ffmpeg`、`ffprobe`；macOS 已验证，Linux 有编码分支但尚未实机验收。
-- 首次使用安装 Python 虚拟环境与依赖：
+- 系统环境：macOS、Windows 或 Linux。macOS 使用 VideoToolbox；Windows 和 Linux 默认使用 `libx264` 软件编码。
+- 软件依赖：Python 3.10+、`ffmpeg`、`ffprobe`；macOS 已实机验证，Windows 由 GitHub Actions 的 `windows-latest` 持续验证，Linux 编码分支仍需单独验收。
+- 首次使用安装 Python 虚拟环境与依赖。macOS / Linux：
   ```bash
   bash setup.sh
+  ```
+  Windows PowerShell：
+  ```powershell
+  .\setup.ps1
   ```
 
 ### 3. API Key 配置
@@ -71,6 +75,12 @@ node scripts/credential-ui/src/profile.ts setup default
 bash scripts/run.sh cut /path/to/video.mp4
 ```
 
+Windows PowerShell 使用：
+
+```powershell
+.\scripts\run.ps1 cut C:\path\to\video.mp4
+```
+
 第一次运行会在 `.<name>.<ext>_work/semantic_context.json` 写入带时间戳的原子片段和判断规则。Agent 读完后，在同目录写 `semantic_plan.json`，再执行：
 
 ```bash
@@ -79,7 +89,7 @@ bash scripts/run.sh cut /path/to/video.mp4 \
   -o /path/to/video_edited.mp4
 ```
 
-- 默认使用 macOS 原生 `h264_videotoolbox` 硬件加速。
+- macOS 默认使用 `h264_videotoolbox`；Windows 和 Linux 自动回退到 `libx264`。
 - 自动提取音频校准底噪、FunAudio ASR 字级转录、自适应停顿切除、Agent 语义判断、波形极值吸附与 15ms 微淡化组装。
 - 两套剪辑 Skill 统一使用同一套停顿规则：连续无声超过 **300ms** 才进入剪辑候选，剪后保留约 **180ms** 气口；底层 250ms 探测窗口只负责发现候选，不会直接触发剪辑。ASR 时间戳和无声区重叠时只做复核提示，不自动阻止音频剪辑。
 - 收尾检查区分两类证据：语义删减必须避开保留词和替代话术；已经由音频确认的停顿允许覆盖不精确的 ASR 时间戳，避免检测阶段放行、最后又被旧式全局字保护拦回。

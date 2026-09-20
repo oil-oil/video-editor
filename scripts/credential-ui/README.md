@@ -108,7 +108,7 @@ macOS / Windows 通过 @napi-rs/keyring 原生绑定。Linux 显式调用 secret
 
 凭据库不可用或被锁定时停止，明确提示检查服务；不自动安装、解锁或降级到 JSON、浏览器存储等明文介质。服务器、无桌面 Linux 或其他凭据实现必须另行确认实际能力。
 
-当前 macOS 已验证；Windows / Linux 已实现适配但尚未实机验证。
+当前 macOS 已实机验证；Windows 由 GitHub Actions 的原生凭据 smoke test 验证；Linux 已实现适配，仍需单独实机验证。
 
 ## 业务使用
 

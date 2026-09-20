@@ -1,0 +1,65 @@
+name: Windows compatibility
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install FFmpeg
+        shell: pwsh
+        run: |
+          if (-not (Get-Command ffmpeg -ErrorAction SilentlyContinue)) {
+            choco install ffmpeg --yes --no-progress
+            Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
+            refreshenv
+          }
+          ffmpeg -version
+          ffprobe -version
+
+      - name: Prepare Python environment
+        shell: pwsh
+        run: |
+          python -m venv .venv
+          .\.venv\Scripts\python.exe -m pip install --quiet --upgrade pip
+
+      - name: Install credential component dependencies
+        working-directory: scripts/credential-ui
+        run: npm ci --ignore-scripts
+
+      - name: Validate PowerShell setup and runner
+        shell: pwsh
+        run: |
+          .\setup.ps1 -SkipDependencies
+          .\scripts\run.ps1 cut --help
+
+      - name: Run Python tests
+        run: .\.venv\Scripts\python.exe -m unittest discover -s tests -v
+
+      - name: Check Python syntax
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem scripts -Filter '*.py' | ForEach-Object { $_.FullName }
+          .\.venv\Scripts\python.exe -m py_compile $files
+
+      - name: Run credential component checks
+        working-directory: scripts/credential-ui
+        run: |
+          npm run check
+          npm test
+          npm run test:native

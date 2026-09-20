@@ -30,6 +30,12 @@ node "$SKILL_DIR/scripts/credential-ui/src/profile.ts" setup default
 node "$SKILL_DIR/scripts/credential-ui/src/profile.ts" run default -- "$SKILL_DIR/.venv/bin/python3" "$SKILL_DIR/scripts/video_editor.py" cut /path/to/video.mp4
 ```
 
+Windows PowerShell 使用：
+
+```powershell
+.\scripts\run.ps1 cut C:\path\to\video.mp4
+```
+
 上述底层注入入口中，环境变量优先；缺失时仅从系统库读取当前配置所需的 Key，并只注入可信业务子进程。参数、普通文件和状态输出都不含 Key。使用页面保存的凭据后，后续云端业务命令同样经统一入口执行。`review` 和 `render` 直接使用本地计划，无需 Key。
 
 系统后端分别为 macOS 钥匙串、Windows 凭据管理器、Linux Secret Service。CI、容器与远程服务器使用已有 Secret 注入，不把本机页面开放到网络。
