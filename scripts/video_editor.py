@@ -237,15 +237,20 @@ def run_pipeline(
     semantic_cuts = refine_cut_boundaries_to_minima(semantic_cuts, audio_wav)
     cuts = merge_intervals([(c["start_ms"], c["end_ms"]) for c in pause_cuts + semantic_cuts])
     cuts = validate_intervals(cuts, duration_s * 1000)
-    # Final guard after every boundary operation; only approved semantic words may be removed.
+    # Final guard after semantic boundary operations. Confirmed audio silence is
+    # allowed to overlap an imprecise ASR timestamp; only semantic cuts must
+    # prove that every removed word belongs to the Agent-approved range.
     for word in words:
         ws, we = word["start"] * 1000, word["end"] * 1000
         removed = any(c["spoken_start_ms"] - 1 <= ws and we <= c["spoken_end_ms"] + 1
                       for c in semantic_cuts)
-        if not removed and any(max(ws, s) < min(we, e) for s, e in cuts):
+        if not removed and any(max(ws, s) < min(we, e)
+                               for s, e in ((c["start_ms"], c["end_ms"])
+                                            for c in semantic_cuts)):
             raise ValueError("最终剪辑区间触及保留文字，已停止出片")
     for c in semantic_cuts:
-        if any(max(rs, s) < min(re, e) for rs, re in c["replacement_intervals"] for s, e in cuts):
+        if any(max(rs, c["start_ms"]) < min(re, c["end_ms"])
+               for rs, re in c["replacement_intervals"]):
             raise ValueError("最终剪辑区间触及替代话术，已停止出片")
     kept = complement_intervals(cuts, duration_s * 1000)
     if not kept:

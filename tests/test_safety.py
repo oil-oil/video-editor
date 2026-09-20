@@ -224,10 +224,24 @@ class PipelineSafetyTests(unittest.TestCase):
         self.assertFalse(editor.work_paths(self.video)[1].exists())
         self.assertFalse(editor.work_paths(self.video)[2].exists())
 
-    def test_final_guard_rejects_cut_into_retained_word(self):
-        with patch.object(editor, 'detect_adaptive_pauses', return_value=[{'start_ms': 100, 'end_ms': 800}]):
+    def test_final_guard_rejects_semantic_cut_into_retained_word(self):
+        semantic_cut = {
+            'start_ms': 100, 'end_ms': 800,
+            'spoken_start_ms': 200, 'spoken_end_ms': 300,
+            'replacement_intervals': [],
+        }
+        with patch.object(editor, 'detect_adaptive_pauses', return_value=[]), \
+             patch.object(editor, 'plan_video_cuts', return_value=[semantic_cut]):
             with self.assertRaisesRegex(ValueError, '保留文字'):
                 editor.run_pipeline(self.video, dry_run=True)
+
+    def test_confirmed_audio_pause_may_overlap_asr_word(self):
+        with patch.object(editor, 'detect_adaptive_pauses', return_value=[
+            {'start_ms': 100, 'end_ms': 800, 'source': 'silence'}
+        ]):
+            result = editor.run_pipeline(self.video, dry_run=True)
+        self.assertEqual(result['semantic_cuts'], [])
+        self.assertEqual(result['pause_cuts'][0]['source'], 'silence')
 
     def test_short_keep_not_merged_away(self):
         with patch.object(editor, 'detect_adaptive_pauses', return_value=[
