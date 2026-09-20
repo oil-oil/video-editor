@@ -13,6 +13,21 @@ from pathlib import Path
 from typing import Any
 
 
+def configure_output_encoding() -> None:
+    """Keep Chinese logs and JSON readable in Windows console and CI pipes."""
+    if sys.platform != "win32":
+        return
+    for stream in (sys.stdout, sys.stderr):
+        if stream is not None and hasattr(stream, "reconfigure"):
+            try:
+                stream.reconfigure(encoding="utf-8", errors="replace")
+            except (OSError, ValueError):
+                pass
+
+
+configure_output_encoding()
+
+
 def log(msg: str) -> None:
     print(f"[video-editor] {msg}", file=sys.stderr, flush=True)
 
