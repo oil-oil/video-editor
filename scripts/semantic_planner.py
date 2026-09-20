@@ -159,9 +159,13 @@ Include:
 
 Do NOT include:
 - fluent discourse markers merely because they are short;
+- sentence openings, introductions, or subject clauses (e.g. "今天这个视频的主题是...", "我们今天讲...", "关于这个...") merely because there are pauses or hesitations before the predicate; silence gaps are already trimmed by VAD, so keep the spoken opening words;
+- treating a sentence continuation, object, or predicate (e.g. "做一个视频...") as a "replacement" for the subject/introduction ("今天这个视频的主题是..."); a replacement MUST semantically restate or correct the removed thought, NOT merely continue it;
+- connected clauses, verb-object pairs, or modifier-noun phrases delivered across pauses (e.g. "做一个视频" followed by "录制的 skill" -> "做一个视频录制的 skill", or "开发一个" followed by "新的工具"); these form a single grammatical sentence, NOT a self_correction;
+- any passage where combining the utterances across pauses yields a natural, grammatically coherent sentence;
 - fluent finalized explanations that are part of the intended tutorial;
 - a repeated passage that adds a claim, example, number, warning, or troubleshooting detail;
-- stylistic shortening without evidence of a recording mistake.
+- stylistic shortening without clear evidence of a recording mistake.
 
 Return strict JSON only in this shape:
 {{
@@ -293,7 +297,10 @@ def candidates_from_plan(
                 end = float(by_id[cut_until_id]["start"])
 
         category = raw.get("category", "delivery_cleanup")
-        confidence = raw.get("confidence", "medium")
+        confidence = str(raw.get("confidence") or "medium").lower().strip()
+        if confidence == "low":
+            continue
+
         replacement_ids = [
             str(item)
             for item in (raw.get("replacement_ids") or [])
@@ -304,17 +311,16 @@ def candidates_from_plan(
         if duration_ms < 500.0:
             continue
 
+        # Deleting without replacement is strictly for short local cleanups (<= 3.5s)
+        if not replacement_ids and duration_ms > 3500.0:
+            continue
+
         replacementless_local_cleanup = (
-            category
-            in {
-                "self_correction",
-                "delivery_cleanup",
-                "abandoned_take",
-                "explicit_restart",
-            }
+            category in {"self_correction", "delivery_cleanup"}
             and confidence in {"high", "medium"}
             and cut_until_id in by_id
             and positions[cut_until_id] == positions[end_id] + 1
+            and duration_ms <= 3500.0
         )
         if (
             category not in {"recording_meta", "screen_pause"}
