@@ -15,6 +15,10 @@ from common import log, merge_intervals
 
 _SILERO_MODEL = None
 SENTENCE_ENDINGS = {"。", "！", "？", ".", "!", "?", "…", "；", ";", "\n"}
+# Keep auto mode sensitive to near-inaudible flat waveform blocks. Without a
+# floor, a few isolated peaks can push the p80-based threshold too low and let
+# an otherwise silent segment survive merely because ASR hallucinated a word.
+_AUTO_SILENCE_FLOOR_DB = -30.5
 
 
 def resolve_silence_db(
@@ -31,9 +35,9 @@ def resolve_silence_db(
             pass
     if speech_level > noise_floor:
         threshold = noise_floor + 0.45 * (speech_level - noise_floor)
-        return round(max(-45.0, min(-18.0, threshold)), 1)
+        return round(max(_AUTO_SILENCE_FLOOR_DB, min(-18.0, threshold)), 1)
     if mean_db is not None:
-        return round(max(-45.0, min(-18.0, mean_db - 10.0)), 1)
+        return round(max(_AUTO_SILENCE_FLOOR_DB, min(-18.0, mean_db - 10.0)), 1)
     return -28.0
 
 

@@ -19,9 +19,16 @@ class SilenceDetectorTests(unittest.TestCase):
         self.assertEqual(resolve_silence_db("-25", -20.0, -45.0, -15.0), -25.0)
 
     def test_resolve_silence_db_auto(self):
-        # noise_floor = -45.0, speech = -15.0 -> -45 + 0.45 * 30 = -31.5
+        # Raw result is -31.5 dB, then the automatic floor raises it to -30.5 dB.
         db = resolve_silence_db("auto", -20.0, -45.0, -15.0)
-        self.assertEqual(db, -31.5)
+        self.assertEqual(db, -30.5)
+
+    def test_resolve_silence_db_auto_has_audible_floor(self):
+        self.assertEqual(
+            resolve_silence_db("auto", -26.1, -49.5, -25.9),
+            -30.5,
+        )
+        self.assertEqual(resolve_silence_db("-40", -26.1, -49.5, -25.9), -40.0)
 
     def test_split_retained_pause(self):
         kb, ka = split_retained_pause(180.0)
